@@ -1,0 +1,8 @@
+node_modules/
+extract/KaTeX/
+extract/MathJax-src/
+demo/index.html
+demo/style.css
+demo/dist/
+.cursor/
+.codegraph/

@@ -1,0 +1,32 @@
+{
+  "name": "@webc.site/math",
+  "version": "0.1.3",
+  "description": "The world's smallest and fastest web Markdown formula renderer / 全球最小最快的网页Markdown公式渲染器",
+  "keywords": [
+    "markdown",
+    "math",
+    "mathml",
+    "render",
+    "tex"
+  ],
+  "homepage": "https://math.webc.site",
+  "license": "MulanPSL-2.0",
+  "author": "i18n.site@gmail.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/webc-site/math.git"
+  },
+  "type": "module",
+  "exports": {
+    ".": "./mathml.js",
+    "./*": "./*"
+  },
+  "scripts": {
+    "prepare": "husky"
+  },
+  "dependencies": {},
+  "lint-staged": {
+    "**/*.svg": "bun sh/hook/svg.js",
+    "**/*.styl": "bun sh/hook/styl.js"
+  }
+}

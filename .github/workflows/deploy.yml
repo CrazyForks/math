@@ -1,0 +1,36 @@
+name: Deploy static content to Pages
+
+on:
+  push:
+    branches: ["dev", "main"]
+    paths:
+      - "demo/**"
+      - "src/**"
+      - "sh/benchmark.js"
+      - "package.json"
+      - "vite.config.js"
+      - "demo/build.js"
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install
+      - name: Build
+        run: ./demo/build.js
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./demo/dist
+          publish_branch: gh-pages
