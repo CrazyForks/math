@@ -21,13 +21,15 @@
 
 ## 1. Features
 
-This project compiles LaTeX math formulas into browser-native MathML Core markup, achieving zero-overhead rendering without client-side layout engines.
+This project compiles LaTeX math formulas into browser-native MathML Core markup. Through compile-time conversion, it bypasses client-side layout engines to achieve zero-overhead formula rendering.
 
-- **High Performance**: Compiles TeX formulas directly to native MathML. Processing speed reaches 302,000 operations per second, 3.3 times faster than KaTeX and 47 times faster than MathJax.
-- **Lightweight**: Package size is 7.69 KB (3.56 KB gzipped), with zero external dependencies.
-- **Zero Runtime Dependencies**: Renders math using the browser's native layout engine, eliminating client-side JavaScript formatting libraries.
-- **Robust Fault Tolerance**: Catches syntax errors automatically, reverting to raw TeX string output to prevent application crashes.
-- **Universal Compatibility**: Generates standard MathML tags suitable for Server-Side Rendering (SSR), Static Site Generation (SSG), and Client-Side Rendering (CSR).
+Key Features:
+
+- **High Performance**: Compiles TeX formulas directly to native MathML. Processing speed exceeds 300,000 operations per second, 3 times faster than KaTeX and 40 times faster than MathJax.
+- **Lightweight**: Core package size is 7.69 KB (3.56 KB gzipped) with zero external dependencies.
+- **Zero Runtime Overhead**: Relies entirely on the browser's native engine for layout, eliminating client-side JavaScript formatting libraries.
+- **Robust Fault Tolerance**: Catches syntax errors (such as unclosed braces) and reverts to raw TeX string output to prevent application crashes.
+- **High Compatibility**: Generates standard MathML tags suitable for Server-Side Rendering (SSR), Static Site Generation (SSG), and Client-Side Rendering (CSR).
 
 ## 2. Usage
 
@@ -38,7 +40,8 @@ This project compiles LaTeX math formulas into browser-native MathML Core markup
 ```javascript
 import mathml from "@webc.site/math";
 
-const html = mathml("e^{i\\pi} + 1 = 0", true); // Second parameter sets block style
+// Second parameter set to true renders block style
+const html = mathml("e^{i\\pi} + 1 = 0", true);
 ```
 
 #### Replace Formulas in Markdown Text
@@ -52,7 +55,7 @@ const html = mdMath("Euler's identity: $$e^{i\\pi} + 1 = 0$$", compile);
 
 ### Font and CSS Configuration
 
-To ensure optimal layout, configure math fonts. Use Latin Modern Math font from the `18s` package.
+Configure math fonts to ensure proper layout alignment. Latin Modern Math font from the `18s` package is recommended.
 
 #### CSS Font Styling
 
@@ -64,7 +67,7 @@ math {
 
 ## 3. Design
 
-The compiler extracts TeX math formulas from input Markdown text, performs lexical and syntax analyses, and generates semantic MathML markup.
+The compiler extracts TeX formulas from input Markdown text, tokenizes and parses them, and translates the AST to semantic MathML markup.
 
 ```mermaid
 graph TD
@@ -81,7 +84,7 @@ graph TD
 
 ## 4. Tech Stack
 
-- **Runtime**: Bun, Node.js
+- **Build & Test Environment**: Bun, Node.js
 - **Linter & Formatter**: oxlint, oxfmt
 - **Build Tool**: Vite, Rolldown, Lightning CSS
 
@@ -95,7 +98,7 @@ graph TD
 │   ├── mathml.js        # Core compiler (minified)
 │   └── md.js            # Markdown math formula parser (minified)
 ├── src/                 # Source code
-│   ├── const/           # Tokens, AST types, symbols and functions constants
+│   ├── const/           # Tokens, AST types, symbols, and functions constants
 │   ├── lex.js           # LaTeX lexer
 │   ├── parse.js         # LaTeX parser (AST builder)
 │   ├── mathml.js        # Core TeX-to-MathML compiler
@@ -106,11 +109,13 @@ graph TD
 
 ## 6. Historical Background
 
-The W3C published the MathML 1.0 specification in 1998 to provide mathematical notation on the web. However, the complexity of the specification placed a heavy implementation burden on browser layout engines.
+The W3C published the MathML 1.0 specification in 1998 to standardize mathematical notation on the web. However, the complexity of the specification placed a maintenance burden on browser layout engines.
 
-In 2013, due to maintenance costs and security vulnerabilities, the Chromium team removed the unfinished MathML rendering implementation from the Blink engine. Web developers subsequently relied on client-side JavaScript libraries (such as MathJax and KaTeX) to simulate formula layout. These libraries increased bundle sizes and consumed client-side CPU resources, impacting page load times and rendering performance.
+In 2013, the Chromium team removed the unfinished MathML rendering implementation from the Blink engine due to maintenance costs and security vulnerabilities. Web developers subsequently relied on client-side JavaScript libraries (such as MathJax and KaTeX) to simulate formula layout. These libraries increased bundle sizes and consumed client-side CPU resources, impacting page load times and rendering performance.
 
-In January 2023, Chrome 109 reintroduced support for the optimized MathML Core specification. With Blink, Gecko, and WebKit all natively supporting this subset, web browsers achieved consistent native MathML rendering. This project compiles TeX directly to native MathML markup at compile time, eliminating client-side layout engines and avoiding client-side rendering overhead.
+To resolve this issue, organizations like Igalia and Mozilla refactored the specification into the MathML Core standard, focusing on essential, implementable parts backed by Web Platform Tests.
+
+In January 2023, Chrome 109 reintroduced support for the MathML Core specification. With Blink, Gecko, and WebKit all natively supporting this subset, web browsers achieved consistent native MathML rendering. This project compiles TeX directly to native MathML markup at compile time, eliminating client-side layout engines and avoiding client-side rendering overhead.
 
 ---
 
@@ -125,7 +130,7 @@ In January 2023, Chrome 109 reintroduced support for the optimized MathML Core s
       - [直接渲染 TeX 公式](#直接渲染-tex-公式)
       - [替换 Markdown 文本中的公式](#替换-markdown-文本中的公式)
     - [字体与 CSS 配置](#字体与-css-配置)
-      - [CSS 字体样式设置](#css-字体样式设置)
+      - [CSS 样式配置](#css-样式配置)
   - [3. 设计思路](#3-设计思路)
   - [4. 技术栈](#4-技术栈)
   - [5. 代码结构](#5-代码结构)
@@ -133,13 +138,15 @@ In January 2023, Chrome 109 reintroduced support for the optimized MathML Core s
 
 ## 1. 功能介绍
 
-项目将 LaTeX 数学公式编译为浏览器原生支持的 MathML Core 标记，无需前端排版引擎，实现零运行开销渲染。
+本项目将 LaTeX 数学公式编译为浏览器原生支持的 MathML Core 标记。通过编译期转换，无需客户端排版引擎，实现零运行时开销的公式渲染。
 
-- **高性能**：TeX 公式直接编译为原生 MathML 标签。处理速度达每秒 302,000 次，为 KaTeX 的 3.3 倍，MathJax 的 47 倍。
-- **轻量化**：体积 7.69 KB（Gzip 压缩后 3.56 KB），无外部依赖。
-- **零运行开销**：完全依赖浏览器原生引擎排版与渲染，无需加载客户端 JavaScript 库。
-- **健壮容错**：捕获语法错误（例如未闭合括号），降级输出原始 TeX 字符串，避免崩溃。
-- **兼容性**：输出标准 MathML 元素，支持服务端渲染（SSR）、静态网页生成（SSG）和前端动态转换。
+主要特性：
+
+- **高性能**：TeX 公式直接转换为原生 MathML 标签。处理速度达每秒 300,000 次以上，为 KaTeX 的 3 倍以上，MathJax 的 40 倍以上。
+- **轻量化**：核心包体积 7.69 KB（Gzip 压缩后 3.56 KB），无外部依赖。
+- **零运行开销**：完全依赖浏览器原生引擎排版与渲染，无需加载客户端 JavaScript 排版库。
+- **高容错性**：自动捕获语法错误（例如未闭合括号），降级输出原始 TeX 字符串，保证应用运行稳定。
+- **强兼容性**：生成的 MathML 标签符合标准，适配服务端渲染（SSR）、静态网站生成（SSG）和客户端渲染（CSR）。
 
 ## 2. 使用演示
 
@@ -150,7 +157,8 @@ In January 2023, Chrome 109 reintroduced support for the optimized MathML Core s
 ```javascript
 import mathml from "@webc.site/math";
 
-const html = mathml("e^{i\\pi} + 1 = 0", true); // 第二参数设为 true 表示块级公式
+// 第二参数为 true 表示渲染为块级公式
+const html = mathml("e^{i\\pi} + 1 = 0", true);
 ```
 
 #### 替换 Markdown 文本中的公式
@@ -164,9 +172,9 @@ const html = mdMath("欧拉恒等式：$$e^{i\\pi} + 1 = 0$$", compile);
 
 ### 字体与 CSS 配置
 
-配置数学字体以确保排版美观。推荐使用 `18s` 字体包中的 Latin Modern Math 字体。
+配置数学字体以确保排版对齐。推荐使用 `18s` 字体包中的 Latin Modern Math 字体。
 
-#### CSS 字体样式设置
+#### CSS 样式配置
 
 ```css
 math {
@@ -176,7 +184,7 @@ math {
 
 ## 3. 设计思路
 
-编译器从输入的 Markdown 文本中提取 TeX 公式，执行词法分析与语法分析，生成对应的语义化 MathML 标记。
+编译器从输入的 Markdown 文本中提取 TeX 公式，依次通过扫描、词法分析、语法分析，最终生成对应的语义化 MathML 标记。
 
 ```mermaid
 graph TD
@@ -218,8 +226,10 @@ graph TD
 
 ## 6. 历史故事
 
-MathML 规范制定于 1998 年（W3C 发布 MathML 1.0 规范），旨在为万维网提供数学公式排版标准方案。因规范设计繁杂，给浏览器排版引擎带来实现负担。
+1998 年，W3C 发布 MathML 1.0 规范，旨在提供万维网数学公式的标准排版方案。由于早期规范复杂，给浏览器排版引擎带来维护负担。
 
-2013 年，Chromium 团队因维护成本与安全漏洞考量，移除了 Blink 引擎中的 MathML 渲染代码。网页公式排版转为依赖第三方 JavaScript 库（如 MathJax、KaTeX）模拟公式布局。此类库体积较大，且消耗客户端 CPU 算力，对页面加载和渲染性能产生影响。
+2013 年，Chromium 团队因维护成本与安全漏洞考量，移除了 Blink 引擎中的 MathML 渲染代码。网页公式排版转为依赖第三方 JavaScript 库（如 MathJax、KaTeX）模拟公式布局。这增加了网页资源体积，并消耗客户端 CPU 资源，影响页面加载与渲染速度。
 
-2023 年 1 月，Chrome 109 重新支持 MathML Core 标准，Blink、Gecko 和 WebKit 三大主流浏览器引擎实现原生 MathML 渲染支持。此项目在此背景下开发，将 TeX 在构建期或服务端直接编译为原生 MathML 标记，避免客户端排版计算开销。
+为了解决该困境，Igalia、Mozilla 等团队推动了规范的重构，形成聚焦核心、易于实现的 MathML Core 标准，并进行了 Web 平台测试。
+
+2023 年 1 月，Chrome 109 重新支持 MathML Core 标准，Blink、Gecko 和 WebKit 三大主流浏览器引擎实现原生 MathML 渲染支持。本项目在此背景下开发，将 TeX 在构建期或服务端直接编译为原生 MathML 标记，消除客户端排版计算开销。
