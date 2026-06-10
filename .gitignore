@@ -8,4 +8,4 @@ demo/dist/
 .cursor/
 .codegraph/
 .DS_Store
-tmp/
+/.tmp/
