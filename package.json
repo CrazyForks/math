@@ -1,6 +1,6 @@
 {
   "name": "@webc.site/math",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "description": "The world's smallest and fastest web Markdown formula renderer / 全球最小最快的网页Markdown公式渲染器",
   "keywords": [
     "markdown",
@@ -35,7 +35,8 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@1-/dist": "^0.1.18"
+    "@1-/dist": "^0.1.18",
+    "@1-/mdimg2cdn": "^0.1.1"
   },
   "devDependencies": {
     "@1-/findgit": "^0.1.2",

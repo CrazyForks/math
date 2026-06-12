@@ -6,6 +6,7 @@
       "name": "@webc.site/math",
       "dependencies": {
         "@1-/dist": "^0.1.18",
+        "@1-/mdimg2cdn": "^0.1.1",
       },
       "devDependencies": {
         "@1-/findgit": "^0.1.2",
@@ -57,6 +58,8 @@
     "@1-/md": ["@1-/md@0.1.3", "", {}, "sha512-9nPq+X34oho7PAoQvHYDH8RqqcgaxyzoB9EcwrxEAZitQB9Whr8IYX4XdHtGmHq0N5VCnzMJO0bikVqqbjTx2g=="],
 
     "@1-/mdcheck": ["@1-/mdcheck@0.1.9", "", { "dependencies": { "@1-/md": "^0.1.3", "@1-/read": "^0.1.1", "@1-/walk": "^0.1.1", "@3-/log": "^0.1.9", "mermaid": "^11.15.0", "yargs": "^18.0.0" }, "bin": { "mdcheck": "cli.js" } }, "sha512-55hl1dUa5YtMDevGVkXxzZ50a32C19colcGbcEvArvabwqV5MoYIX2XWSUPym8EE9I0C0j52ds88Yz2uXDT9uw=="],
+
+    "@1-/mdimg2cdn": ["@1-/mdimg2cdn@0.1.1", "", { "dependencies": { "@1-/findgit": "^0.1.2", "@1-/github_cdn": "^0.1.0", "@1-/md": "^0.1.5", "@1-/mdmermaid": "^0.1.5", "@1-/read": "^0.1.1", "yargs": "^18.0.0" }, "bin": { "mdimg2cdn": "cli.js" } }, "sha512-MiuLV9ihm4axm4OIqPgwdFg9OfcmKuRxZsvU1Wx9mqto2i6Lka9fvuvKdG02RbPc5wUD6u7rsb+ybapNzW5qPw=="],
 
     "@1-/mdmermaid": ["@1-/mdmermaid@0.1.5", "", { "peerDependencies": { "@1-/md": "^0.1.2", "beautiful-mermaid": "^1.1.3", "svgo": "^4.0.1" } }, "sha512-EdAtpBDy0UvklpffNZMifRE2kzON+4fiK7DtnVXP+8kdgzAdSGtZzZN37lIi/lMG1+z1CfCm4jn+0jW0dC+4Tw=="],
 
@@ -1259,6 +1262,8 @@
     "zwitch": ["zwitch@2.0.4", "", {}, "sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A=="],
 
     "zx": ["zx@8.8.5", "", { "bin": { "zx": "build/cli.js" } }, "sha512-SNgDF5L0gfN7FwVOdEFguY3orU5AkfFZm9B5YSHog/UDHv+lvmd82ZAsOenOkQixigwH2+yyH198AwNdKhj+RA=="],
+
+    "@1-/mdimg2cdn/@1-/md": ["@1-/md@0.1.5", "", {}, "sha512-9IMYOrJ9qCKRUTj1QkeF8hRR+FlcLcN5rBJVa585fLWOaFpEQ1u2leEKIgmG4S6M0mIYcNXrFsQSsZoxrVPO/Q=="],
 
     "@3-/stylfmt/@3-/stylus": ["@3-/stylus@0.1.12", "", { "dependencies": { "@3-/log": "^0.1.9", "@jridgewell/gen-mapping": "^0.3.13", "known-css-properties": "^0.37.0" } }, "sha512-j4LiBjYkPe8iMXx8CD2RgmQ53TrT1meCwjdWbv4dDMeKjVigrpiqg2Zn9t5jjIZQbJF9M+HT90KobKmewC9J7g=="],
 

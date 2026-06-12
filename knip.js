@@ -2,7 +2,6 @@ export default {
   entry: [
     "sh/bench/*.js",
     "dev.js",
-    "dist.js",
     "minify.js",
     "extract/run.js",
     "sh/check.js",
@@ -21,5 +20,11 @@ export default {
     "sh/gen_formula_svg.js",
   ],
   ignore: ["demo/**", "lib/**", "plugin/*/lib/**", "plugin/*/src/*.d.ts", "./conf/**"],
-  ignoreDependencies: ["@mathjax/mathjax-mhchem-font-extension", "oxfmt", "oxlint", "@1-/mdcheck"],
+  ignoreDependencies: [
+    "@mathjax/mathjax-mhchem-font-extension",
+    "oxfmt",
+    "oxlint",
+    "@1-/mdcheck",
+    "@1-/mdimg2cdn",
+  ],
 };
