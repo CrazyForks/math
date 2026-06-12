@@ -206,10 +206,14 @@ In January 2023, Chrome 109 reintroduced support for the MathML Core specificati
     - [直接渲染 TeX 公式](#直接渲染-tex-公式)
     - [替换 Markdown 文本中的公式](#替换-markdown-文本中的公式)
     - [字体与 CSS 配置](#字体与-css-配置)
-  - [3. 设计思路](#3-设计思路)
-  - [4. 技术栈](#4-技术栈)
-  - [5. 代码结构](#5-代码结构)
-  - [6. 历史故事](#6-历史故事)
+  - [3. 插件](#3-插件)
+    - [3.1 markdown-it](#31-markdown-it)
+    - [3.2 marked](#32-marked)
+    - [3.3 remark](#33-remark)
+  - [4. 设计思路](#4-设计思路)
+  - [5. 技术栈](#5-技术栈)
+  - [6. 代码结构](#6-代码结构)
+  - [7. 历史故事](#7-历史故事)
 
 ## 1. 功能介绍
 
@@ -253,7 +257,78 @@ math {
 }
 ```
 
-## 3. 设计思路
+## 3. 插件
+
+本项目为各大主流 Markdown 解析器提供了扩展插件，可在编译/构建时直接将 TeX 公式渲染为原生 MathML 标记。
+
+### 3.1 markdown-it
+
+安装：
+
+```bash
+npm install @webc.site/math-markdown-it
+```
+
+使用方法：
+
+```javascript
+import markdownit from "markdown-it";
+import mathMarkdownIt from "@webc.site/math-markdown-it";
+
+const md = markdownit().use(mathMarkdownIt);
+
+const html = md.render("行内公式: $E = mc^2$ 和 块级公式: \n$$\n\\frac{a}{b}\n$$");
+console.log(html);
+```
+
+### 3.2 marked
+
+安装：
+
+```bash
+npm install @webc.site/math-marked
+```
+
+使用方法：
+
+```javascript
+import { marked } from "marked";
+import mathMarked from "@webc.site/math-marked";
+
+marked.use(mathMarked());
+
+const html = marked.parse("行内公式: $E = mc^2$ 和 块级公式: \n$$\n\\frac{a}{b}\n$$");
+console.log(html);
+```
+
+### 3.3 remark
+
+安装：
+
+```bash
+npm install @webc.site/math-remark
+```
+
+使用方法：
+
+```javascript
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import remarkMath from "remark-math";
+import mathRemark from "@webc.site/math-remark";
+import remarkHtml from "remark-html";
+
+const processor = unified()
+  .use(remarkParse)
+  .use(remarkMath)
+  .use(mathRemark)
+  .use(remarkHtml, { sanitize: false });
+
+const html = await processor.process("行内公式: $E = mc^2$ 和 块级公式: \n$$\n\\frac{a}{b}\n$$");
+console.log(String(html));
+```
+
+## 4. 设计思路
 
 编译器从输入文本中提取 TeX 公式，依次通过扫描、词法分析、语法分析，最终生成语义化 MathML 标记。
 
@@ -270,14 +345,14 @@ graph TD
     MathML --> Output
 ```
 
-## 4. 技术栈
+## 5. 技术栈
 
 - **运行环境**：Node.js, Bun
 - **构建工具**：Rolldown, Vite
 - **样式处理**：Lightning CSS
 - **代码质量**：oxlint, oxfmt
 
-## 5. 代码结构
+## 6. 代码结构
 
 ```
 .
@@ -295,7 +370,7 @@ graph TD
 └── sh/                  # 构建脚本
 ```
 
-## 6. 历史故事
+## 7. 历史故事
 
 1998 年，W3C 发布 MathML 1.0 规范，旨在提供万维网数学公式的标准排版方案。由于早期规范复杂，给浏览器排版引擎带来维护负担。
 
