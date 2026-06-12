@@ -3,10 +3,16 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import minify from "./minify.js";
 import ROOT_DIR from "./sh/ROOT.js";
+import renderMdt from "@1-/mdt/_.js";
 import { simpleGit } from "simple-git";
 
 const main = async () => {
   await minify(ROOT_DIR);
+
+  const mdt_path = join(ROOT_DIR, "README.mdt"),
+    md_content = await renderMdt(mdt_path, ROOT_DIR);
+  writeFileSync(join(ROOT_DIR, "README.md"), md_content, "utf8");
+  console.log("README.md rendered from README.mdt");
 
   const pkg_path = join(ROOT_DIR, "package.json"),
     pkg = JSON.parse(readFileSync(pkg_path, "utf8")),
@@ -25,7 +31,7 @@ const main = async () => {
     current_branch = status.current;
   console.log("Current branch: " + current_branch);
 
-  await git.add("-A");
+  await git.add("-u");
   await git.commit("v" + next_version);
 
   if (current_branch !== "main") {

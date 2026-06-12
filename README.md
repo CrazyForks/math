@@ -203,37 +203,29 @@ In January 2023, Chrome 109 reintroduced support for the MathML Core specificati
 - [@webc.site/math : 全球最小最快的网页 Markdown 公式渲染器](#webcsitemath-全球最小最快的网页-markdown-公式渲染器)
   - [1. 功能介绍](#1-功能介绍)
   - [2. 使用演示](#2-使用演示)
-    - [编译示例](#编译示例)
-      - [直接渲染 TeX 公式](#直接渲染-tex-公式)
-      - [替换 Markdown 文本中的公式](#替换-markdown-文本中的公式)
+    - [直接渲染 TeX 公式](#直接渲染-tex-公式)
+    - [替换 Markdown 文本中的公式](#替换-markdown-文本中的公式)
     - [字体与 CSS 配置](#字体与-css-配置)
-      - [CSS 样式配置](#css-样式配置)
-  - [3. 插件使用](#3-插件使用)
-    - [3.1 markdown-it](#31-markdown-it)
-    - [3.2 marked](#32-marked)
-    - [3.3 remark](#33-remark)
-  - [4. 设计思路](#4-设计思路)
-  - [5. 技术栈](#5-技术栈)
-  - [6. 代码结构](#6-代码结构)
-  - [7. 历史故事](#7-历史故事)
+  - [3. 设计思路](#3-设计思路)
+  - [4. 技术栈](#4-技术栈)
+  - [5. 代码结构](#5-代码结构)
+  - [6. 历史故事](#6-历史故事)
 
 ## 1. 功能介绍
 
 本项目将 LaTeX 数学公式编译为浏览器原生支持的 MathML Core 标记。通过编译期转换，无需客户端排版引擎，实现零运行时开销的公式渲染。
 
-主要特性：
+核心特性：
 
-- **高性能**：TeX 公式直接转换为原生 MathML 标签。处理速度达每秒 300,000 次以上，为 KaTeX 的 3 倍以上，MathJax 的 40 倍以上。
-- **轻量化**：核心包体积 7.69 KB（Gzip 压缩后 3.56 KB），无外部依赖。
-- **零运行开销**：完全依赖浏览器原生引擎排版与渲染，无需加载客户端 JavaScript 排版库。
-- **高容错性**：自动捕获语法错误（例如未闭合括号），降级输出原始 TeX 字符串，保证应用运行稳定。
-- **强兼容性**：生成的 MathML 标签符合标准，适配服务端渲染（SSR）、静态网站生成（SSG）和客户端渲染（CSR）。
+- **高性能**：TeX 公式直接转换为原生 MathML 标签，处理速度达每秒 300,000 次以上
+- **轻量化**：核心包体积 7.69 KB（Gzip 压缩后 3.56 KB），无外部依赖
+- **零运行开销**：完全依赖浏览器原生引擎排版与渲染
+- **高容错性**：自动捕获语法错误，降级输出原始 TeX 字符串
+- **强兼容性**：生成标准 MathML 标签，适配 SSR、SSG 和 CSR
 
 ## 2. 使用演示
 
-### 编译示例
-
-#### 直接渲染 TeX 公式
+### 直接渲染 TeX 公式
 
 ```javascript
 import mathml from "@webc.site/math";
@@ -242,7 +234,7 @@ import mathml from "@webc.site/math";
 const html = mathml("e^{i\\pi} + 1 = 0", true);
 ```
 
-#### 替换 Markdown 文本中的公式
+### 替换 Markdown 文本中的公式
 
 ```javascript
 import mdMath from "@webc.site/math/md.js";
@@ -253,9 +245,7 @@ const html = mdMath("欧拉恒等式：$$e^{i\\pi} + 1 = 0$$", compile);
 
 ### 字体与 CSS 配置
 
-配置数学字体以确保排版对齐。推荐使用 `18s` 字体包中的 Latin Modern Math 字体。
-
-#### CSS 样式配置
+配置数学字体确保排版对齐：
 
 ```css
 math {
@@ -263,84 +253,13 @@ math {
 }
 ```
 
-## 3. 插件使用
+## 3. 设计思路
 
-本项目为主流 Markdown 解析器提供了扩展插件，在编译/构建时直接将 TeX 公式渲染为 MathML 标签。
-
-### 3.1 markdown-it
-
-安装：
-
-```bash
-npm install @webc.site/math-markdown-it
-```
-
-使用示例：
-
-```javascript
-import markdownit from "markdown-it";
-import mathMarkdownIt from "@webc.site/math-markdown-it";
-
-const md = markdownit().use(mathMarkdownIt);
-
-const html = md.render("行内公式: $E = mc^2$ 和 块级公式: \n$$\n\\frac{a}{b}\n$$");
-console.log(html);
-```
-
-### 3.2 marked
-
-安装：
-
-```bash
-npm install @webc.site/math-marked
-```
-
-使用示例：
-
-```javascript
-import { marked } from "marked";
-import mathMarked from "@webc.site/math-marked";
-
-marked.use(mathMarked());
-
-const html = marked.parse("行内公式: $E = mc^2$ 和 块级公式: \n$$\n\\frac{a}{b}\n$$");
-console.log(html);
-```
-
-### 3.3 remark
-
-安装：
-
-```bash
-npm install @webc.site/math-remark
-```
-
-使用示例：
-
-```javascript
-import { unified } from "unified";
-import remarkParse from "remark-parse";
-import remarkMath from "remark-math";
-import mathRemark from "@webc.site/math-remark";
-import remarkHtml from "remark-html";
-
-const processor = unified()
-  .use(remarkParse)
-  .use(remarkMath)
-  .use(mathRemark)
-  .use(remarkHtml, { sanitize: false });
-
-const html = await processor.process("行内公式: $E = mc^2$ 和 块级公式: \n$$\n\\frac{a}{b}\n$$");
-console.log(String(html));
-```
-
-## 4. 设计思路
-
-编译器从输入的 Markdown 文本中提取 TeX 公式，依次通过扫描、词法分析、语法分析，最终生成对应的语义化 MathML 标记。
+编译器从输入文本中提取 TeX 公式，依次通过扫描、词法分析、语法分析，最终生成语义化 MathML 标记。
 
 ```mermaid
 graph TD
-    Input[输入 Markdown] --> Scanner[扫描器: 定界符定位]
+    Input[输入文本] --> Scanner[扫描器: 定界符定位]
     Scanner -->|普通文本| Buffer[输出缓冲区]
     Scanner -->|TeX 公式| Lexer[词法分析: 生成 Token]
     Lexer --> Parser[语法分析: 生成 AST]
@@ -351,37 +270,35 @@ graph TD
     MathML --> Output
 ```
 
-## 5. 技术栈
+## 4. 技术栈
 
-- **运行环境**：Bun, Node.js
-- **语法检查与格式化**：oxlint, oxfmt
-- **构建工具**：Vite, Rolldown, Lightning CSS
+- **运行环境**：Node.js, Bun
+- **构建工具**：Rolldown, Vite
+- **样式处理**：Lightning CSS
+- **代码质量**：oxlint, oxfmt
 
-## 6. 代码结构
+## 5. 代码结构
 
 ```
 .
-├── demo/                # 演示页面
-├── extract/             # 测试用例提取脚本
 ├── lib/                 # 编译产物目录
-│   ├── mathml.js        # 核心编译器（压缩版）
-│   └── md.js            # Markdown 公式解析器（压缩版）
+│   ├── mathml.js        # 核心编译器
+│   └── md.js            # Markdown 公式解析器
 ├── src/                 # 源代码
 │   ├── const/           # Token、AST 节点、符号和函数常量定义
 │   ├── lex.js           # LaTeX 词法分析器
 │   ├── parse.js         # LaTeX 语法分析器
 │   ├── mathml.js        # TeX 至 MathML 核心编译器
 │   └── md.js            # Markdown 公式解析入口
-├── sh/                  # 脚本目录
-└── test.sh              # 代码规范与测试运行脚本
+├── demo/                # 演示页面
+├── extract/             # 测试用例提取脚本
+└── sh/                  # 构建脚本
 ```
 
-## 7. 历史故事
+## 6. 历史故事
 
 1998 年，W3C 发布 MathML 1.0 规范，旨在提供万维网数学公式的标准排版方案。由于早期规范复杂，给浏览器排版引擎带来维护负担。
 
-2013 年，Chromium 团队因维护成本与安全漏洞考量，移除了 Blink 引擎中的 MathML 渲染代码。网页公式排版转为依赖第三方 JavaScript 库（如 MathJax、KaTeX）模拟公式布局。这增加了网页资源体积，并消耗客户端 CPU 资源，影响页面加载与渲染速度。
+2013 年，Chromium 团队因维护成本与安全漏洞考量，移除了 Blink 引擎中的 MathML 渲染代码。网页公式排版转为依赖第三方 JavaScript 库（如 MathJax、KaTeX）模拟公式布局。
 
-为了解决该困境，Igalia、Mozilla 等团队推动了规范的重构，形成聚焦核心、易于实现的 MathML Core 标准，并进行了 Web 平台测试。
-
-2023 年 1 月，Chrome 109 重新支持 MathML Core 标准，Blink、Gecko 和 WebKit 三大主流浏览器引擎实现原生 MathML 渲染支持。本项目在此背景下开发，将 TeX 在构建期或服务端直接编译为原生 MathML 标记，消除客户端排版计算开销。
+2023 年 1 月，Chrome 109 重新支持 MathML Core 标准，Blink、Gecko 和 WebKit 三大主流浏览器引擎实现原生 MathML 渲染支持。本项目在此背景下开发，将 TeX 在构建期或服务端直接编译为原生 MathML 标记。
