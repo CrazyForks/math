@@ -22,8 +22,8 @@ const main = async () => {
 
   // Generate formula SVGs only
   for (const [name, tex] of Object.entries(FORMULAS)) {
-    const node = MathJax.tex2svg(tex);
-    const html = MathJax.startup.adaptor.outerHTML(node);
+    const node = MathJax.tex2svg(tex),
+      html = MathJax.startup.adaptor.outerHTML(node);
 
     const match = html.match(/<svg[^>]*>([\s\S]*?)<\/svg>/);
     if (match) {
@@ -31,25 +31,24 @@ const main = async () => {
 
       const viewBoxMatch = svg.match(/viewBox="([^"]+)"/);
       if (viewBoxMatch) {
-        const [vx, vy, vw, vh] = viewBoxMatch[1].split(/\s+/).map(Number);
-        const paddingY = Math.round(vh * 0.25);
-        const newVy = vy - paddingY;
-        const newVh = vh + paddingY * 2;
-
-        const ratio = newVh / vh;
+        const [vx, vy, vw, vh] = viewBoxMatch[1].split(/\s+/).map(Number),
+          paddingY = Math.round(vh * 0.25),
+          newVy = vy - paddingY,
+          newVh = vh + paddingY * 2,
+          ratio = newVh / vh;
         svg = svg.replace(
           /viewBox="[^"]+"/,
           'viewBox="' + vx + " " + newVy + " " + vw + " " + newVh + '"',
         );
 
         svg = svg.replace(/height="([^"]+)"/, (_, h) => {
-          const val = parseFloat(h);
-          const unit = h.replace(/[0-9.]/g, "");
+          const val = parseFloat(h),
+            unit = h.replace(/[0-9.]/g, "");
           return 'height="' + (val * ratio).toFixed(3) + unit + '"';
         });
         svg = svg.replace(/width="([^"]+)"/, (_, w) => {
-          const val = parseFloat(w);
-          const unit = w.replace(/[0-9.]/g, "");
+          const val = parseFloat(w),
+            unit = w.replace(/[0-9.]/g, "");
           return 'width="' + (val * ratio).toFixed(3) + unit + '"';
         });
       }

@@ -1,17 +1,8 @@
 import { cE } from "./js/cE.js";
 import compile from "../../lib/mathml.js";
+import convert from "../../lib/md.js";
 
-const parseTex = (val) => {
-  let tex = val.trim(),
-    block = false;
-  if (tex.startsWith("$$") && tex.endsWith("$$")) {
-    tex = tex.slice(2, -2);
-    block = true;
-  } else if (tex.startsWith("$") && tex.endsWith("$")) {
-    tex = tex.slice(1, -1);
-  }
-  return [tex, block];
-};
+let sheet;
 
 cE(
   "math",
@@ -23,17 +14,25 @@ cE(
       this._html = "";
       this._math_w = 0;
 
-      const style = document.createElement("style");
-      style.textContent =
-        ":host{display:flex !important;justify-content:center;align-items:center;box-sizing:border-box;width:100%}" +
-        ".math-container{display:flex;justify-content:center;align-items:center;width:100%;box-sizing:border-box}" +
-        "math{display:inline-block !important;transform-origin:center center;color:var(--text-color);font-family:m,t,math,sans-serif;font-size:30px}" +
-        "c-hs{width:100%;display:block}" +
-        ".scroll-wrapper{display:flex;justify-content:center;align-items:center;min-width:100%;width:max-content}";
-      this.shadowRoot.appendChild(style);
+      if (!sheet) {
+        sheet = new CSSStyleSheet();
+        sheet.replaceSync(
+          ".mathC{font-family:m;width:100%;box-sizing:border-box;color:var(--text-color);line-height:1.6}" +
+            ".mathC.single-formula{display:flex;justify-content:center;align-items:center;min-height:100px;font-size:32px;padding:12px 0}" +
+            ".mathC.mixed-text{display:block;text-align:center;font-size:18px;padding:8px 0}" +
+            "math{display:inline-block !important;transform-origin:center center;font-family:m,t,math,sans-serif;font-weight:normal !important;font-style:normal !important}" +
+            "math mo, math mi{font-weight:normal !important;font-style:normal !important}" +
+            ".single-formula math{font-size:32px}" +
+            ".mixed-text math{font-size:22px;vertical-align:middle;margin:0 6px}" +
+            '.mixed-text math[display="block"]{display:block !important;margin:16px auto;font-size:28px}' +
+            "c-hs{width:100%;display:block}" +
+            ".scroll-wrapper{display:flex;justify-content:center;align-items:center;min-width:100%;width:max-content}",
+        );
+      }
+      this.shadowRoot.adoptedStyleSheets = [sheet];
 
       this.container = document.createElement("div");
-      this.container.className = "math-container";
+      this.container.className = "mathC";
       this.shadowRoot.appendChild(this.container);
 
       this._ro = new ResizeObserver(() => this.updateLayout());
@@ -67,17 +66,29 @@ cE(
     }
 
     render() {
-      const val = this.tex;
-      if (!val) {
-        this.container.innerHTML = "";
-        this._math_w = 0;
-        return;
-      }
+      const val = this.tex,
+        is_single =
+          !val.includes("$") ||
+          (val.startsWith("$$") && val.endsWith("$$") && val.indexOf("$$", 2) === val.length - 2) ||
+          (val.startsWith("$") && val.endsWith("$") && val.indexOf("$", 1) === val.length - 1);
 
-      let [tex, block] = parseTex(val),
-        html;
+      this.container.className = "mathC " + (is_single ? "single-formula" : "mixed-text");
+
+      let html;
       try {
-        html = compile(tex, block);
+        if (is_single) {
+          let clean_tex = val.trim();
+          let is_block = false;
+          if (clean_tex.startsWith("$$") && clean_tex.endsWith("$$")) {
+            clean_tex = clean_tex.slice(2, -2);
+            is_block = true;
+          } else if (clean_tex.startsWith("$") && clean_tex.endsWith("$")) {
+            clean_tex = clean_tex.slice(1, -1);
+          }
+          html = compile(clean_tex, is_block);
+        } else {
+          html = convert(val, compile);
+        }
       } catch {
         this.container.textContent = val;
         this._math_w = 0;

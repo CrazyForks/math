@@ -70,6 +70,7 @@ const LIMITS_MAP = {
     "]": [TYPE_OP, "]", ATTR_STRETCHY_FALSE],
     "|": [TYPE_OP, "|", ATTR_BAR],
     ".": [TYPE_OP, ".", ATTR_NORMAL],
+    "'": [TYPE_OP, "′"],
   },
   DELIM_MAP = {
     __proto__: null,
@@ -333,6 +334,15 @@ const LIMITS_MAP = {
       sup = null,
       type;
     while ((type = tokens[ref[0]]) != null) {
+      if (type === TOK_OP && tokens[ref[0] + 1] === "'") {
+        let count = 0;
+        while (tokens[ref[0]] === TOK_OP && tokens[ref[0] + 1] === "'") {
+          ++count;
+          ref[0] += 2;
+        }
+        sup = [TYPE_OP, "′".repeat(count)];
+        continue;
+      }
       if (type !== TOK_SUB && type !== TOK_SUP) break;
       ref[0] += 2;
       if (type === TOK_SUB) sub = read(tokens, ref, 1);

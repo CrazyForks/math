@@ -1275,3 +1275,18 @@
     <math xmlns="http://www.w3.org/1998/Math/MathML"
     display="block"><semantics><mrow><msup><mi>f</mi><mo>′</mo></msup></mrow><annotation
     encoding="application/x-tex">f^\prime</annotation></semantics></math>
+- - $$f'$$
+  - >-
+    <math xmlns="http://www.w3.org/1998/Math/MathML"
+    display="block"><semantics><mrow><msup><mi>f</mi><mo>′</mo></msup></mrow><annotation
+    encoding="application/x-tex">f'</annotation></semantics></math>
+- - $$f''$$
+  - >-
+    <math xmlns="http://www.w3.org/1998/Math/MathML"
+    display="block"><semantics><mrow><msup><mi>f</mi><mo>′′</mo></msup></mrow><annotation
+    encoding="application/x-tex">f''</annotation></semantics></math>
+- - $$f_1'$$
+  - >-
+    <math xmlns="http://www.w3.org/1998/Math/MathML"
+    display="block"><semantics><mrow><msubsup><mi>f</mi><mn>1</mn><mo>′</mo></msubsup></mrow><annotation
+    encoding="application/x-tex">f_1'</annotation></semantics></math>
