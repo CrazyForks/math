@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "package.json"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -21,7 +22,7 @@ jobs:
       - name: 拉取配置
         uses: actions/checkout@v6
         with:
-          repository: webc-ol/conf
+          repository: webc-cron/conf
           path: conf-repo
           token: ${{ secrets.GH_TOKEN }}
 
