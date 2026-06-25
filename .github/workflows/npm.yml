@@ -47,6 +47,9 @@ jobs:
       - name: 生成配置
         run: bun sh/github/pkg.js
 
+      - name: 复制 README.md 到 lib 目录
+        run: cp README.md lib/
+
       - name: 上传 SVG 图片
         run: bunx mdimg2cdn -w README.md
         working-directory: ./lib
