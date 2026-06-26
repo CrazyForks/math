@@ -109,7 +109,11 @@ const ENV_DELIMS = {
             ),
           )
           .join(""),
-        tbl = wrap("mtable", inner),
+        tbl = wrap(
+          "mtable",
+          inner,
+          n[1] === "cases" ? ' columnalign="left" rowspacing=".2em" columnspacing="1em"' : "",
+        ),
         del = ENV_DELIMS[n[1]];
       if (del) {
         const [d0, d1] = del;

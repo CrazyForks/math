@@ -310,11 +310,17 @@ const LIMITS_MAP = {
     const idx = ref[0],
       type = tokens[idx];
     if (type == null) return null;
-    ref[0] += 2;
     let val = tokens[idx + 1];
+    const offset = ref[1] || 0;
+    if (offset > 0) {
+      val = val.slice(offset);
+    }
     if (split_num && type === TOK_NUM && val[1]) {
-      tokens.splice(ref[0], 0, TOK_NUM, val.slice(1));
+      ref[1] = offset + 1;
       val = val[0];
+    } else {
+      ref[0] += 2;
+      ref[1] = 0;
     }
     return TOK_MAP[type]?.(val, tokens, ref) ?? null;
   },
