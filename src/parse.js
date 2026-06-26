@@ -125,7 +125,8 @@ const LIMITS_MAP = {
       const node = grab(tokens, ref);
       if (node) cell.push(node);
     }
-    (cell.length || row.length) && (row.push(cell), rows.push(row));
+    cell.length && row.push(cell);
+    row.length && rows.push(row);
     if (rows.length && !rows[rows.length - 1][1] && !rows[rows.length - 1][0][0]) {
       rows.pop();
     }
