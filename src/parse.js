@@ -76,19 +76,17 @@ const MENCLOSE_MAP = {
     }
   },
   brace = (tokens, ref) => {
-    let idx = ref[0];
+    let idx = ref[0],
+      str = "";
     if (tokens[idx] === TOK_LBRACE) {
       idx += 2;
-      let str = "";
-      while (tokens[idx] > 0 && tokens[idx] !== TOK_RBRACE) {
+      for (; tokens[idx] > 0 && tokens[idx] !== TOK_RBRACE; idx += 2) {
         str += tokens[idx + 1];
-        idx += 2;
       }
       tokens[idx] > 0 && (idx += 2);
       ref[0] = idx;
-      return str;
     }
-    return "";
+    return str;
   },
   rows = (tokens, ref, end_check, env) => {
     const rows = [];
