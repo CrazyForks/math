@@ -45,7 +45,8 @@ export default (str) => {
             t_idx = pos;
           while (t_idx < len && braces) {
             const cc = str.charCodeAt(++t_idx);
-            cc === 123 ? ++braces : cc === 125 && --braces;
+            if (cc === 123) ++braces;
+            else if (cc === 125) --braces;
           }
           if (!braces) {
             res.push(

@@ -168,7 +168,8 @@ const LIMITS_MAP = {
       const env = brace(tokens, ref);
       if (env === "array") {
         opt(tokens, ref);
-        tokens[ref[0]] === TOK_LBRACE ? brace(tokens, ref) : tokens[ref[0]] > 0 && (ref[0] += 2);
+        if (tokens[ref[0]] === TOK_LBRACE) brace(tokens, ref);
+        else if (tokens[ref[0]] > 0) ref[0] += 2;
       }
       const res = rows(tokens, ref, 1, env);
       return [TYPE_MATRIX, env, res];
@@ -259,10 +260,10 @@ const LIMITS_MAP = {
   },
   read = (tokens, ref, split_num) => {
     const idx = ref[0],
-      type = tokens[idx];
+      type = tokens[idx],
+      offset = ref[1];
     if (!type) return null;
     let val = tokens[idx + 1];
-    const offset = ref[1];
     offset && (val = val.slice(offset));
     if (split_num && type === TOK_NUM && val[1]) {
       ref[1] = (offset || 0) + 1;
@@ -274,10 +275,10 @@ const LIMITS_MAP = {
     return TOK_MAP[type]?.(val, tokens, ref) ?? null;
   },
   grab = (tokens, ref) => {
-    const base = read(tokens, ref);
+    const base = read(tokens, ref),
+      idx = ref[0];
     if (!base) return null;
     let limits = 0;
-    const idx = ref[0];
     if (tokens[idx] === TOK_CMD) {
       const lim = LIMITS_MAP[tokens[idx + 1]];
       if (lim) {
