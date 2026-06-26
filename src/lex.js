@@ -47,7 +47,7 @@ export default (str) => {
           if (!braces) {
             res.push(
               TOK_CMD,
-              "\\text",
+              cmd,
               TOK_LBRACE,
               "{",
               TOK_IDENT,
