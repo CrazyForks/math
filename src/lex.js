@@ -26,6 +26,7 @@ export default (str) => {
     if (m) {
       const cmd = m[0];
       idx += cmd.length;
+      res.push(TOK_CMD, cmd);
       if (cmd === "\\text") {
         const pos = skip(str, idx);
         if (str.charCodeAt(pos) === 123) {
@@ -37,22 +38,11 @@ export default (str) => {
             else if (cc === 125) --braces;
           }
           if (!braces) {
-            res.push(
-              TOK_CMD,
-              cmd,
-              TOK_LBRACE,
-              "{",
-              TOK_IDENT,
-              str.slice(pos + 1, t_idx),
-              TOK_RBRACE,
-              "}",
-            );
+            res.push(TOK_LBRACE, "{", TOK_IDENT, str.slice(pos + 1, t_idx), TOK_RBRACE, "}");
             idx = t_idx + 1;
-            continue;
           }
         }
       }
-      res.push(TOK_CMD, cmd);
       continue;
     }
 
