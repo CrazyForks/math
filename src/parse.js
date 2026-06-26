@@ -173,7 +173,7 @@ const LIMITS_MAP = {
       if (env === "array") {
         opt(tokens, ref);
         if (tokens[ref[0]] === TOK_LBRACE) brace(tokens, ref);
-        else if (tokens[ref[0]] > 0) ref[0] += 2;
+        else read(tokens, ref);
       }
       const res = rows(tokens, ref, 1, env);
       return [TYPE_MATRIX, env, res];
