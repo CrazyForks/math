@@ -28,7 +28,6 @@ const MROW = "mrow",
   STYLES = [null, STYLE_BOX, STYLE_CANCEL, STYLE_SOUT],
   ALIGN_RL = ["right", LEFT],
   PAD_RL = [";padding-right:0", ";padding-left:0"],
-  SPACE_RL = ["0", "2em"],
   TAGS = [null, "mi", "mn", "mo"],
   ESC_MAP = {
     "&": "&amp;",
@@ -113,7 +112,7 @@ const MROW = "mrow",
                 row_0.map((_, i) => ALIGN_RL[i % 2]).join(" "),
                 row_0
                   .slice(1)
-                  .map((_, i) => SPACE_RL[i % 2])
+                  .map((_, i) => (i % 2 ? "2em" : "0"))
                   .join(" "),
               )
             : "",
