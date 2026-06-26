@@ -79,7 +79,7 @@ const LIMITS_MAP = {
       while (tokens[idx] > 0 && (tokens[idx] !== TOK_OP || tokens[idx + 1] !== "]")) {
         idx += 2;
       }
-      tokens[idx] === TOK_OP && (idx += 2);
+      tokens[idx] > 0 && (idx += 2);
       ref[0] = idx;
     }
   },
