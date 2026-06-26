@@ -73,7 +73,7 @@ const MROW = "mrow",
     [TYPE_LEFT_RIGHT]: ([, ns]) => wrap(MROW, ns.map(show).join("")),
     [TYPE_OVERLINE]: ([, n_1]) => nest("mover", n_1, [TYPE_OP, "¯"]),
     [TYPE_MENCLOSE]: ([, style_id, node]) =>
-      STYLES[style_id] ? wrap("mrow", row(node), STYLES[style_id]) : row(node),
+      STYLES[style_id] ? wrap(MROW, row(node), STYLES[style_id]) : row(node),
     [TYPE_MPHANTOM]: ([, n_1]) => wrap("mphantom", row(n_1)),
     [TYPE_MATRIX]: (n) => {
       const [, env, rows] = n,
@@ -137,7 +137,7 @@ export default (tex, block) => {
     "math",
     wrap(
       "semantics",
-      wrap("mrow", parse(lex(clean), [0, 0]).map(show).join("")) +
+      wrap(MROW, parse(lex(clean), [0, 0]).map(show).join("")) +
         wrap("annotation", esc(clean), ' encoding="application/x-tex"'),
     ),
     ' xmlns="http://www.w3.org/1998/Math/MathML"' + (block ? ' display="block"' : ""),
