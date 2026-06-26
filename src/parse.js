@@ -1,4 +1,10 @@
 import {
+  ERR_EXTRA_END,
+  ERR_MISSING_RIGHT,
+  ERR_EXTRA_RIGHT,
+  ERR_MISSING_BRACE,
+} from "./const/ERR.js";
+import {
   TYPE_IDENT,
   TYPE_NUM,
   TYPE_OP,
@@ -159,7 +165,7 @@ const LIMITS_MAP = {
     if (node) {
       return [TYPE_TEXT, node[1]];
     }
-    throw [3, "text"];
+    throw [ERR_MISSING_BRACE, "text"];
   },
   begin = (tokens, ref, val) => {
     if (tokens[ref[0]] === TOK_LBRACE) {
@@ -194,7 +200,7 @@ const LIMITS_MAP = {
       ref[0] += 2;
       return [TYPE_LEFT_RIGHT, [left, ...body, delim(tokens, ref)].filter(Boolean)];
     }
-    throw [1, left];
+    throw [ERR_MISSING_RIGHT, left];
   },
   over = (tokens, ref) => [TYPE_OVERLINE, read(tokens, ref, 1)],
   frac = (tokens, ref) => [TYPE_FRAC, read(tokens, ref, 1), read(tokens, ref, 1)],
@@ -227,10 +233,10 @@ const LIMITS_MAP = {
     pmod,
     begin,
     end: (tokens, ref, val, name) => {
-      throw [0, name];
+      throw [ERR_EXTRA_END, name];
     },
     right: (tokens, ref, val, name) => {
-      throw [2, name];
+      throw [ERR_EXTRA_RIGHT, name];
     },
   },
   TOK_MAP = {
@@ -288,7 +294,7 @@ const LIMITS_MAP = {
     while ((type = tokens[ref[0]]) > 0) {
       if (type === TOK_OP && tokens[ref[0] + 1] === "'") {
         let count = 0;
-        while (tokens[ref[0]] === TOK_OP && tokens[ref[0] + 1] === "'") (count++, (ref[0] += 2));
+        while (tokens[ref[0]] === TOK_OP && tokens[ref[0] + 1] === "'") (++count, (ref[0] += 2));
         sup = [TYPE_OP, "′".repeat(count)];
         continue;
       }
