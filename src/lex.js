@@ -38,12 +38,10 @@ export default (str) => {
     const code = str.charCodeAt(idx);
     if (code === 92) {
       const start = idx++;
-      if (idx < len) {
-        if (isAlpha(str.charCodeAt(idx))) {
-          while (isAlpha(str.charCodeAt(++idx)));
-        } else {
-          ++idx;
-        }
+      if (isAlpha(str.charCodeAt(idx))) {
+        while (isAlpha(str.charCodeAt(++idx)));
+      } else if (idx < len) {
+        ++idx;
       }
       const cmd = str.slice(start, idx);
       if (cmd === "\\text") {
@@ -79,13 +77,10 @@ export default (str) => {
     }
     if (isDigit(code) || (code === 46 && isDigit(str.charCodeAt(idx + 1)))) {
       const start = idx;
-      if (code === 46) {
-        idx += 2;
-      } else {
+      if (code === 46) idx += 2;
+      else {
         while (isDigit(str.charCodeAt(++idx)));
-        if (str.charCodeAt(idx) === 46 && isDigit(str.charCodeAt(idx + 1))) {
-          idx += 2;
-        }
+        str.charCodeAt(idx) === 46 && isDigit(str.charCodeAt(idx + 1)) && (idx += 2);
       }
       while (isDigit(str.charCodeAt(idx))) ++idx;
       res.push(TOK_NUM, str.slice(start, idx));

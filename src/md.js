@@ -7,34 +7,30 @@ export default (md, compile) => {
     const char = md[idx];
 
     if (char === "`") {
-      const is_block = md[idx + 1] === "`" && md[idx + 2] === "`",
-        delim = is_block ? "```" : "`",
-        step = is_block ? 3 : 1,
-        end_pos = md.indexOf(delim, idx + step);
-      if (end_pos === -1) {
+      const block = md[idx + 1] === "`" && md[idx + 2] === "`",
+        delim = block ? "```" : "`",
+        step = block ? 3 : 1,
+        end = md.indexOf(delim, idx + step);
+      if (end === -1) {
         res += md.slice(idx);
         break;
       }
-      res += md.slice(idx, end_pos + step);
-      idx = end_pos + step;
+      res += md.slice(idx, end + step);
+      idx = end + step;
       continue;
     }
 
     if (char === "$") {
-      const is_block = md[idx + 1] === "$",
-        delim = is_block ? "$$" : "$",
-        step = is_block ? 2 : 1;
+      const block = md[idx + 1] === "$",
+        delim = block ? "$$" : "$",
+        step = block ? 2 : 1;
       let pos = idx + step;
 
       while (pos < len) {
         const cc = md[pos];
-        if (cc === "\\") {
-          pos += 2;
-        } else if (md.startsWith(delim, pos)) {
-          break;
-        } else {
-          ++pos;
-        }
+        if (cc === "\\") pos += 2;
+        else if (md.startsWith(delim, pos)) break;
+        else ++pos;
       }
 
       if (pos >= len) {
@@ -44,7 +40,7 @@ export default (md, compile) => {
 
       const content = md.slice(idx + step, pos);
       try {
-        res += compile(content, is_block);
+        res += compile(content, block);
       } catch {
         res += delim + content + delim;
       }

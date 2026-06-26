@@ -1,99 +1,29 @@
 import { TYPE_IDENT, TYPE_OP } from "./TYPE.js";
 import { ATTR_NORMAL, ATTR_BIN, ATTR_REL } from "./ATTR.js";
 
-const LE = [TYPE_OP, "≤"],
-  GE = [TYPE_OP, "≥"],
-  NE = [TYPE_OP, "≠", ATTR_NORMAL],
-  RIGHT_ARROW = [TYPE_OP, "→"],
-  LEFT_ARROW = [TYPE_OP, "←"],
-  L_DOTS = [TYPE_OP, "…"];
+export const SYM_MAP = { __proto__: null };
 
-export const SYM_MAP = {
-  __proto__: null,
-  alpha: [TYPE_IDENT, "α"],
-  beta: [TYPE_IDENT, "β"],
-  gamma: [TYPE_IDENT, "γ"],
-  theta: [TYPE_IDENT, "θ"],
-  pi: [TYPE_IDENT, "π"],
-  infty: [TYPE_IDENT, "∞", ATTR_NORMAL],
-  prime: [TYPE_OP, "′"],
-  le: LE,
-  leq: LE,
-  ge: GE,
-  geq: GE,
-  neq: NE,
-  ne: NE,
-  cdot: [TYPE_OP, "⋅"],
-  times: [TYPE_OP, "×"],
-  pm: [TYPE_OP, "±"],
-  mp: [TYPE_OP, "∓", ATTR_BIN],
-  div: [TYPE_OP, "÷"],
-  sum: [TYPE_OP, "∑"],
-  int: [TYPE_OP, "∫"],
-  to: RIGHT_ARROW,
-  rightarrow: RIGHT_ARROW,
-  leftarrow: LEFT_ARROW,
-  gets: LEFT_ARROW,
-  leftrightarrow: [TYPE_OP, "↔"],
-  Leftarrow: [TYPE_OP, "⇐"],
-  Rightarrow: [TYPE_OP, "⇒"],
-  Leftrightarrow: [TYPE_OP, "⇔"],
-  dots: L_DOTS,
-  ldots: L_DOTS,
-  cdots: [TYPE_OP, "⋯"],
-  Delta: [TYPE_IDENT, "Δ", ATTR_NORMAL],
-  Gamma: [TYPE_IDENT, "Γ", ATTR_NORMAL],
-  Theta: [TYPE_IDENT, "Θ", ATTR_NORMAL],
-  Lambda: [TYPE_IDENT, "Λ", ATTR_NORMAL],
-  Xi: [TYPE_IDENT, "Ξ", ATTR_NORMAL],
-  Pi: [TYPE_IDENT, "Π", ATTR_NORMAL],
-  Sigma: [TYPE_IDENT, "Σ", ATTR_NORMAL],
-  Upsilon: [TYPE_IDENT, "Υ", ATTR_NORMAL],
-  Phi: [TYPE_IDENT, "Φ", ATTR_NORMAL],
-  Psi: [TYPE_IDENT, "Ψ", ATTR_NORMAL],
-  Omega: [TYPE_IDENT, "Ω", ATTR_NORMAL],
-  delta: [TYPE_IDENT, "δ"],
-  epsilon: [TYPE_IDENT, "ϵ"],
-  zeta: [TYPE_IDENT, "ζ"],
-  eta: [TYPE_IDENT, "η"],
-  iota: [TYPE_IDENT, "ι"],
-  kappa: [TYPE_IDENT, "κ"],
-  lambda: [TYPE_IDENT, "λ"],
-  mu: [TYPE_IDENT, "μ"],
-  nu: [TYPE_IDENT, "ν"],
-  xi: [TYPE_IDENT, "ξ"],
-  rho: [TYPE_IDENT, "ρ"],
-  sigma: [TYPE_IDENT, "σ"],
-  tau: [TYPE_IDENT, "τ"],
-  upsilon: [TYPE_IDENT, "υ"],
-  phi: [TYPE_IDENT, "ϕ"],
-  chi: [TYPE_IDENT, "χ"],
-  psi: [TYPE_IDENT, "ψ"],
-  omega: [TYPE_IDENT, "ω"],
-  nabla: [TYPE_IDENT, "∇", ATTR_NORMAL],
-  partial: [TYPE_IDENT, "∂", ATTR_NORMAL],
-  approx: [TYPE_OP, "≈", ATTR_REL],
-  sim: [TYPE_OP, "∼", ATTR_REL],
-  cong: [TYPE_OP, "≅", ATTR_REL],
-  propto: [TYPE_OP, "∝", ATTR_REL],
-  equiv: [TYPE_OP, "≡", ATTR_REL],
-  neg: [TYPE_IDENT, "¬"],
-  lor: [TYPE_OP, "∨", ATTR_BIN],
-  land: [TYPE_OP, "∧", ATTR_BIN],
-  ni: [TYPE_OP, "∋", ATTR_REL],
-  perp: [TYPE_OP, "⟂", ATTR_REL],
-  parallel: [TYPE_OP, "∥", ATTR_REL],
-  ell: [TYPE_IDENT, "ℓ"],
-  hbar: [TYPE_IDENT, "ℏ"],
-  forall: [TYPE_IDENT, "∀", ATTR_NORMAL],
-  exists: [TYPE_IDENT, "∃", ATTR_NORMAL],
-  in: [TYPE_OP, "∈"],
-  notin: [TYPE_OP, "∉"],
-  subset: [TYPE_OP, "⊂"],
-  supset: [TYPE_OP, "⊃"],
-  subseteq: [TYPE_OP, "⊆"],
-  supseteq: [TYPE_OP, "⊇"],
-  cup: [TYPE_OP, "∪"],
-  cap: [TYPE_OP, "∩"],
-  emptyset: [TYPE_IDENT, "∅", ATTR_NORMAL],
-};
+const cache = {},
+  parseSymbols = (str, type, attr) => {
+    str.replace(/([a-zA-Z]+)([^a-zA-Z]+)/g, (m, k, v) => {
+      const key = type + "_" + v + "_" + (attr || "");
+      SYM_MAP[k] = cache[key] ||= attr ? [type, v, attr] : [type, v];
+    });
+  };
+
+parseSymbols(
+  "alphaαbetaβgammaγthetaθpiπdeltaδepsilonϵzetaζetaηiotaιkappaκlambdaλmuμnuνxiξrhoρsigmaσtauτupsilonυphiϕchiχpsiψomegaωellℓhbarℏneg¬",
+  TYPE_IDENT,
+);
+parseSymbols(
+  "DeltaΔGammaΓThetaΘLambdaΛXiΞPiΠSigmaΣUpsilonΥPhiΦPsiΨOmegaΩinfty∞nabla∇partial∂forall∀exists∃emptyset∅",
+  TYPE_IDENT,
+  ATTR_NORMAL,
+);
+parseSymbols(
+  "prime′cdot⋅times×pm±div÷sum∑int∫leftrightarrow↔Leftarrow⇐Rightarrow⇒Leftrightarrow⇔cdots⋯in∈notin∉subset⊂supset⊃subseteq⊆supseteq⊇cup∪cap∩to→rightarrow→leftarrow←gets←dots…ldots…le≤leq≤ge≥geq≥",
+  TYPE_OP,
+);
+parseSymbols("neq≠ne≠", TYPE_OP, ATTR_NORMAL);
+parseSymbols("mp∓lor∨land∧", TYPE_OP, ATTR_BIN);
+parseSymbols("approx≈sim∼cong≅propto∝equiv≡ni∋perp⟂parallel∥", TYPE_OP, ATTR_REL);

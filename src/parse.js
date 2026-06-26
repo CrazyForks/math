@@ -72,11 +72,6 @@ const LIMITS_MAP = {
     ".": [TYPE_OP, ".", ATTR_NORMAL],
     "'": [TYPE_OP, "′"],
   },
-  ident = (val) => [TYPE_IDENT, val],
-  num = (val) => [TYPE_NUM, val],
-  op = (val) => CHAR_MAP[val] ?? [TYPE_OP, val],
-  lparen = () => CHAR_MAP["("],
-  rparen = () => CHAR_MAP[")"],
   delim = (tokens, ref) => {
     const idx = ref[0];
     if (tokens[idx] == null) return null;
@@ -130,19 +125,16 @@ const LIMITS_MAP = {
         }
         ref[0] = pos;
       }
-      if (type === TOK_OP && val === "&") {
+      if ((type === TOK_OP && val === "&") || (type === TOK_CMD && val === "\\\\")) {
         ref[0] += 2;
+        const is_row = val === "\\\\";
+        is_row && opt(tokens, ref, 1);
         row.push(cell);
         cell = [];
-        continue;
-      }
-      if (type === TOK_CMD && val === "\\\\") {
-        ref[0] += 2;
-        opt(tokens, ref, 1);
-        row.push(cell);
-        cell = [];
-        rows.push(row);
-        row = [];
+        if (is_row) {
+          rows.push(row);
+          row = [];
+        }
         continue;
       }
       const node = grab(tokens, ref);
@@ -258,11 +250,11 @@ const LIMITS_MAP = {
     },
   },
   TOK_MAP = {
-    [TOK_IDENT]: ident,
-    [TOK_OP]: op,
-    [TOK_LPAREN]: lparen,
-    [TOK_RPAREN]: rparen,
-    [TOK_NUM]: num,
+    [TOK_IDENT]: (val) => [TYPE_IDENT, val],
+    [TOK_OP]: (val) => CHAR_MAP[val] ?? [TYPE_OP, val],
+    [TOK_LPAREN]: () => CHAR_MAP["("],
+    [TOK_RPAREN]: () => CHAR_MAP[")"],
+    [TOK_NUM]: (val) => [TYPE_NUM, val],
     [TOK_LBRACE]: (val, tokens, ref) => {
       const res = [TYPE_GROUP, parse(tokens, ref)];
       tokens[ref[0]] === TOK_RBRACE && (ref[0] += 2);
@@ -274,14 +266,14 @@ const LIMITS_MAP = {
       return handler
         ? handler(tokens, ref, val, name)
         : ENV_NAMES[name]
-          ? (matrix(tokens, ref, name) ?? ident(val))
+          ? (matrix(tokens, ref, name) ?? [TYPE_IDENT, val])
           : SPACE_MAP[name]
             ? [TYPE_SPACE, SPACE_MAP[name]]
             : MENCLOSE_MAP[name]
               ? [TYPE_MENCLOSE, MENCLOSE_MAP[name], read(tokens, ref, 1)]
               : FUNC_NAMES[name]
                 ? [TYPE_FUNC, name]
-                : (SYM_MAP[name] ?? ident(val));
+                : (SYM_MAP[name] ?? [TYPE_IDENT, val]);
     },
   },
   read = (tokens, ref, split_num) => {
@@ -289,12 +281,10 @@ const LIMITS_MAP = {
       type = tokens[idx];
     if (!type) return null;
     let val = tokens[idx + 1];
-    const offset = ref[1] || 0;
-    if (offset > 0) {
-      val = val.slice(offset);
-    }
+    const offset = ref[1];
+    offset && (val = val.slice(offset));
     if (split_num && type === TOK_NUM && val[1]) {
-      ref[1] = offset + 1;
+      ref[1] = (offset || 0) + 1;
       val = val[0];
     } else {
       ref[0] += 2;
@@ -320,10 +310,7 @@ const LIMITS_MAP = {
     while ((type = tokens[ref[0]]) > 0) {
       if (type === TOK_OP && tokens[ref[0] + 1] === "'") {
         let count = 0;
-        while (tokens[ref[0]] === TOK_OP && tokens[ref[0] + 1] === "'") {
-          ++count;
-          ref[0] += 2;
-        }
+        while (tokens[ref[0]] === TOK_OP && tokens[ref[0] + 1] === "'") (count++, (ref[0] += 2));
         sup = [TYPE_OP, "′".repeat(count)];
         continue;
       }

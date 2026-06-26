@@ -55,17 +55,15 @@ const ENV_DELIMS = {
   },
   esc = (str) => str.replace(/[&<>"]/g, (m) => ESC_MAP[m]),
   wrap = (tag_name, inner, attr) =>
-    "<" + tag_name + (attr ?? "") + ">" + inner + "</" + tag_name + ">",
+    "<" + tag_name + (attr || "") + ">" + inner + "</" + tag_name + ">",
   tag = (name, val, attr) => wrap(name, esc(val), attr),
   nest = (name, n1, n2, n3) => wrap(name, row(n1) + row(n2) + (n3 ? row(n3) : "")),
   row = (n) => {
     if (!n) return wrap(MROW, "");
     const [type, val] = n;
-    return type === TYPE_GROUP
-      ? val[1]
-        ? wrap(MROW, show(n))
-        : row(val[0])
-      : type === TYPE_FUNC
+    return type === TYPE_GROUP && !val[1]
+      ? row(val[0])
+      : type === TYPE_GROUP || type === TYPE_FUNC
         ? wrap(MROW, show(n))
         : show(n);
   },
@@ -100,10 +98,8 @@ const ENV_DELIMS = {
         has_rel =
           is_cases &&
           n[2].every((r) => {
-            const c2 = r[1];
-            if (!c2 || !c2[0]) return true;
-            const [type, val] = c2[0];
-            return type === TYPE_OP && "=<≤≥≠≈≡∝>".includes(val);
+            const node = r[1]?.[0];
+            return !node || (node[0] === TYPE_OP && "=<≤≥≠≈≡∝>".includes(node[1]));
           }),
         inner = n[2]
           .map((r) =>
@@ -147,7 +143,7 @@ const ENV_DELIMS = {
   show = (n) => (n ? SHOW_MAP[n[0]](n) : "");
 
 export default (tex, block) => {
-  const clean = tex.includes("\n") || tex.includes("\r") ? tex.replace(/[\r\n]+/g, " ") : tex;
+  const clean = tex.replace(/[\r\n]+/g, " ");
   return (
     '<math xmlns="http://www.w3.org/1998/Math/MathML"' +
     (block ? ' display="block"' : "") +
