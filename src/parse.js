@@ -268,7 +268,7 @@ const LIMITS_MAP = {
     let val = tokens[idx + 1];
     offset && (val = val.slice(offset));
     if (split_num && type === TOK_NUM && val[1]) {
-      ref[1] = (offset || 0) + 1;
+      ref[1] = offset + 1;
       val = val[0];
     } else {
       ref[0] += 2;

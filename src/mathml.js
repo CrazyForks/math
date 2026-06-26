@@ -137,7 +137,7 @@ export default (tex, block) => {
     "math",
     wrap(
       "semantics",
-      wrap("mrow", parse(lex(clean), [0]).map(show).join("")) +
+      wrap("mrow", parse(lex(clean), [0, 0]).map(show).join("")) +
         wrap("annotation", esc(clean), ' encoding="application/x-tex"'),
     ),
     ' xmlns="http://www.w3.org/1998/Math/MathML"' + (block ? ' display="block"' : ""),
