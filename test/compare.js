@@ -105,6 +105,7 @@ const getSingleChild = (html) => {
     ],
     [/\s*data-[a-zA-Z-]+(?:=(?:"[^"]*"|'[^']*'|[^\s>]*))?/g, ""],
     [/\s*display\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/g, ""],
+    [/\s*style\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, ""],
     [
       /\s*(?:mathvariant|lspace|rspace|stretchy|xmlns|movablelimits|fence|symmetric|accent|rowspacing|columnspacing|columnalign|rowalign|align|columnlines|rowlines|framespacing|frame|equalrows|equalcolumns|displaystyle|separator)\b(?:=(?:"[^"]*"|'[^']*'|[^\s>]*))?/g,
       "",

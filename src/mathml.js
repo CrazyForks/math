@@ -63,7 +63,7 @@ const ENV_DELIMS = {
     const [type, val] = n;
     return type === TYPE_GROUP
       ? val[1]
-        ? wrap(MROW, val.map(show).join(""))
+        ? wrap(MROW, show(n))
         : row(val[0])
       : type === TYPE_FUNC
         ? wrap(MROW, show(n))
@@ -71,7 +71,7 @@ const ENV_DELIMS = {
   },
   script = (n1, limits, display, inline) =>
     limits === LIMITS_DISPLAY ||
-    (limits !== LIMITS_INLINE && (n1[1] === "∑" || (n1[0] === TYPE_FUNC && LIMITS_FUNCS[n1[1]])))
+    (!limits && (n1[1] === "∑" || (n1[0] === TYPE_FUNC && LIMITS_FUNCS[n1[1]])))
       ? display
       : inline,
   SHOW_MAP = {
@@ -96,14 +96,42 @@ const ENV_DELIMS = {
     },
     [TYPE_MPHANTOM]: (n) => wrap("mphantom", row(n[1])),
     [TYPE_MATRIX]: (n) => {
-      const inner = n[2]
+      const is_cases = n[1] === "cases",
+        has_rel =
+          is_cases &&
+          n[2].every((r) => {
+            const c2 = r[1];
+            if (!c2 || !c2[0]) return true;
+            const [type, val] = c2[0];
+            return (
+              type === TYPE_OP &&
+              (val === "=" ||
+                val === "<" ||
+                val === ">" ||
+                val === "≤" ||
+                val === "≥" ||
+                val === "≠" ||
+                val === "≈" ||
+                val === "≡" ||
+                val === "∝")
+            );
+          }),
+        inner = n[2]
           .map((r) =>
             wrap(
               "mtr",
               r
-                .map((c) => {
+                .map((c, i) => {
                   const html = c.map(show).join("");
-                  return wrap("mtd", c[1] ? wrap(MROW, html) : html);
+                  return wrap(
+                    "mtd",
+                    c[1] ? wrap(MROW, html) : html,
+                    is_cases
+                      ? ' style="text-align:left' +
+                          (has_rel ? (i ? ";padding-left:0" : ";padding-right:0") : "") +
+                          '"'
+                      : "",
+                  );
                 })
                 .join(""),
             ),
@@ -112,7 +140,11 @@ const ENV_DELIMS = {
         tbl = wrap(
           "mtable",
           inner,
-          n[1] === "cases" ? ' columnalign="left" rowspacing=".2em" columnspacing="1em"' : "",
+          is_cases
+            ? ' columnalign="left" rowspacing=".2em" columnspacing="' +
+                (has_rel ? "0" : "1em") +
+                '"'
+            : "",
         ),
         del = ENV_DELIMS[n[1]];
       if (del) {
