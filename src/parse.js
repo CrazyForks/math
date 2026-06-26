@@ -292,9 +292,9 @@ const LIMITS_MAP = {
       sup = null,
       type;
     while ((type = tokens[ref[0]]) > 0) {
-      if (type === TOK_OP && tokens[ref[0] + 1] === "'") {
+      if (tokens[ref[0] + 1] === "'") {
         let count = 0;
-        while (tokens[ref[0]] === TOK_OP && tokens[ref[0] + 1] === "'") (++count, (ref[0] += 2));
+        while (tokens[ref[0] + 1] === "'") (++count, (ref[0] += 2));
         sup = [TYPE_OP, "′".repeat(count)];
         continue;
       }
