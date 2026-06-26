@@ -55,9 +55,8 @@ const MROW = "mrow",
         ? wrap(MROW, show(n))
         : show(n);
   },
-  script = ([t, v], limits, display, inline) =>
-    limits === 1 ||
-    (!limits && (v === "∑" || (t === TYPE_FUNC && /^(lim|max|min|sup|inf)$/.test(v))))
+  script = ([, v], limits, display, inline) =>
+    limits === 1 || (!limits && (v === "∑" || /^(lim|max|min|sup|inf)$/.test(v)))
       ? display
       : inline,
   SHOW_MAP = {
