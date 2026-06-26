@@ -270,7 +270,7 @@ const LIMITS_MAP = {
       ref[0] += 2;
       ref[1] = 0;
     }
-    return TOK_MAP[type]?.(val, tokens, ref) ?? null;
+    return TOK_MAP[type](val, tokens, ref);
   },
   grab = (tokens, ref) => {
     const base = read(tokens, ref),
