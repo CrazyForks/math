@@ -24,8 +24,9 @@ import lex from "./lex.js";
 import parse from "./parse.js";
 
 const MROW = "mrow",
+  LEFT = "left",
   STYLES = [null, STYLE_BOX, STYLE_CANCEL, STYLE_SOUT],
-  ALIGN_RL = ["right", "left"],
+  ALIGN_RL = ["right", LEFT],
   PAD_RL = [";padding-right:0", ";padding-left:0"],
   SPACE_RL = ["0", "2em"],
   TAGS = [null, "mi", "mn", "mo"],
@@ -60,20 +61,20 @@ const MROW = "mrow",
       ? display
       : inline,
   SHOW_MAP = {
-    [TYPE_FUNC]: ([, val]) => tag("mi", val) + "<mo>\u2061</mo>",
+    [TYPE_FUNC]: ([, val]) => tag("mi", val) + wrap("mo", "\u2061"),
     [TYPE_GROUP]: ([, ns]) => ns.map(show).join(""),
     [TYPE_FRAC]: ([, n_1, n_2]) => nest("mfrac", n_1, n_2),
     [TYPE_SUP]: (n) => scr(n, 3, "mover", "msup"),
     [TYPE_SUB]: (n) => scr(n, 3, "munder", "msub"),
     [TYPE_SUPSUB]: (n) => scr(n, 4, "munderover", "msubsup"),
     [TYPE_TEXT]: ([, val]) => tag("mtext", val.replace(/ /g, "\u00A0")),
-    [TYPE_SPACE]: ([, val]) => '<mspace width="' + val + '"></mspace>',
+    [TYPE_SPACE]: ([, val]) => wrap("mspace", "", ' width="' + val + '"'),
     [TYPE_MSQRT]: ([, n_1]) => wrap("msqrt", row(n_1)),
     [TYPE_MROOT]: ([, n_1, n_2]) => nest("mroot", n_1, n_2),
     [TYPE_LEFT_RIGHT]: ([, ns]) => wrap(MROW, ns.map(show).join("")),
     [TYPE_OVERLINE]: ([, n_1]) => nest("mover", n_1, [TYPE_OP, "¯"]),
     [TYPE_MENCLOSE]: ([, style_id, node], style = STYLES[style_id]) =>
-      style ? "<mrow" + style + ">" + row(node) + "</mrow>" : row(node),
+      style ? wrap("mrow", row(node), style) : row(node),
     [TYPE_MPHANTOM]: ([, n_1]) => wrap("mphantom", row(n_1)),
     [TYPE_MATRIX]: (n) => {
       const [, env, rows] = n,
@@ -86,15 +87,13 @@ const MROW = "mrow",
             return !t || (t === TYPE_OP && "=<≤≥≠≈≡∝>".includes(v));
           }),
         row_0 = rows[0] || [],
-        col_styles = row_0.map((_, i) => {
-          if (is_cases) {
-            return cellStyle("left", has_rel ? PAD_RL[i] || "" : "");
-          }
-          if (is_align) {
-            return cellStyle(ALIGN_RL[i % 2], PAD_RL[i % 2] || "");
-          }
-          return "";
-        }),
+        col_styles = row_0.map((_, i) =>
+          is_cases
+            ? cellStyle(LEFT, has_rel ? PAD_RL[i] || "" : "")
+            : is_align
+              ? cellStyle(ALIGN_RL[i % 2], PAD_RL[i % 2] || "")
+              : "",
+        ),
         inner = rows
           .map((r) =>
             wrap(
@@ -107,23 +106,21 @@ const MROW = "mrow",
                 .join(""),
             ),
           )
-          .join("");
-
-      let tbl_attr = "";
-      if (is_cases) {
-        tbl_attr = tblAttr("left", has_rel ? "0" : "1em");
-      } else if (is_align) {
-        tbl_attr = tblAttr(
-          row_0.map((_, i) => ALIGN_RL[i % 2]).join(" "),
-          row_0
-            .slice(1)
-            .map((_, i) => SPACE_RL[i % 2])
-            .join(" "),
-        );
-      }
-
-      const tbl = wrap("mtable", inner, tbl_attr),
+          .join(""),
+        tbl_attr = is_cases
+          ? tblAttr(LEFT, has_rel ? "0" : "1em")
+          : is_align
+            ? tblAttr(
+                row_0.map((_, i) => ALIGN_RL[i % 2]).join(" "),
+                row_0
+                  .slice(1)
+                  .map((_, i) => SPACE_RL[i % 2])
+                  .join(" "),
+              )
+            : "",
+        tbl = wrap("mtable", inner, tbl_attr),
         idx = "pbvVc".indexOf(env[0]);
+
       if (idx >= 0) {
         const d_0 = "([|‖{"[idx],
           d_1 = ")]‖‖"[idx] || "";
@@ -131,19 +128,19 @@ const MROW = "mrow",
       }
       return tbl;
     },
-    [TYPE_LINEBREAK]: () => '<mspace linebreak="newline"></mspace>',
+    [TYPE_LINEBREAK]: () => wrap("mspace", "", ' linebreak="newline"'),
   },
   show = (n) => (n ? (n[0] <= 3 ? tag(TAGS[n[0]], n[1], n[2]) : SHOW_MAP[n[0]](n)) : "");
 
 export default (tex, block) => {
   const clean = tex.replace(/[\r\n]+/g, " ");
-  return (
-    '<math xmlns="http://www.w3.org/1998/Math/MathML"' +
-    (block ? ' display="block"' : "") +
-    "><semantics><mrow>" +
-    parse(lex(clean), [0]).map(show).join("") +
-    '</mrow><annotation encoding="application/x-tex">' +
-    esc(clean) +
-    "</annotation></semantics></math>"
+  return wrap(
+    "math",
+    wrap(
+      "semantics",
+      wrap("mrow", parse(lex(clean), [0]).map(show).join("")) +
+        wrap("annotation", esc(clean), ' encoding="application/x-tex"'),
+    ),
+    ' xmlns="http://www.w3.org/1998/Math/MathML"' + (block ? ' display="block"' : ""),
   );
 };
