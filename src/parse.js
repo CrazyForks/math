@@ -52,10 +52,6 @@ const LIMITS_MAP = {
     "-": [TYPE_OP, "−"],
     "*": [TYPE_OP, "∗"],
     "/": [TYPE_OP, "/", ATTR_NORMAL],
-    "(": [TYPE_OP, "(", ATTR_STRETCHY_FALSE],
-    ")": [TYPE_OP, ")", ATTR_STRETCHY_FALSE],
-    "[": [TYPE_OP, "[", ATTR_STRETCHY_FALSE],
-    "]": [TYPE_OP, "]", ATTR_STRETCHY_FALSE],
     "|": [TYPE_OP, "|", ATTR_BAR],
     ".": [TYPE_OP, ".", ATTR_NORMAL],
     "'": [TYPE_OP, "′"],
@@ -322,5 +318,7 @@ const LIMITS_MAP = {
     }
     return nodes;
   };
+
+[..."()[]"].map((c) => (CHAR_MAP[c] = [TYPE_OP, c, ATTR_STRETCHY_FALSE]));
 
 export default parse;
