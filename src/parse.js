@@ -277,11 +277,11 @@ const LIMITS_MAP = {
     const base = read(tokens, ref),
       idx = ref[0];
     if (!base) return null;
-    const limits = LIMITS_MAP[tokens[idx + 1]] || 0;
-    limits && (ref[0] += 2);
-    let sub = null,
+    let limits = LIMITS_MAP[tokens[idx + 1]] || 0,
+      sub = null,
       sup = null,
       type;
+    limits && (ref[0] += 2);
     while ((type = tokens[ref[0]]) > 0) {
       if (tokens[ref[0] + 1] === "'") {
         let count = 0;
