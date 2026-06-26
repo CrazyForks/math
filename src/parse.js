@@ -7,7 +7,6 @@ import {
   TYPE_SUPSUB,
   TYPE_FRAC,
   TYPE_GROUP,
-  TYPE_FUNC,
   TYPE_MSQRT,
   TYPE_MROOT,
   TYPE_LEFT_RIGHT,
@@ -27,7 +26,6 @@ import {
 } from "./const/ERR.js";
 import { ATTR_NORMAL, ATTR_STRETCHY_FALSE, ATTR_BAR } from "./const/ATTR.js";
 import { ENV_NAMES } from "./const/ENV.js";
-import { FUNC_NAMES } from "./const/FUNC.js";
 import { SYM_MAP } from "./const/SYM.js";
 import {
   TOK_EOF,
@@ -264,9 +262,7 @@ const LIMITS_MAP = {
           ? (matrix(tokens, ref, name) ?? [TYPE_IDENT, val])
           : MENCLOSE_MAP[name]
             ? [TYPE_MENCLOSE, MENCLOSE_MAP[name], read(tokens, ref, 1)]
-            : FUNC_NAMES[name]
-              ? [TYPE_FUNC, name]
-              : (SYM_MAP[name] ?? [TYPE_IDENT, val]);
+            : (SYM_MAP[name] ?? [TYPE_IDENT, val]);
     },
   },
   read = (tokens, ref, split_num) => {
