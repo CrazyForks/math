@@ -3,13 +3,11 @@ import { ATTR_NORMAL, ATTR_BIN, ATTR_REL } from "./ATTR.js";
 
 export const SYM_MAP = { __proto__: null };
 
-const cache = {},
-  parseSymbols = (str, type, attr) => {
-    str.replace(/([a-zA-Z]+)([^a-zA-Z]+)/g, (m, k, v) => {
-      const key = type + "_" + v + "_" + (attr || "");
-      SYM_MAP[k] = cache[key] ||= attr ? [type, v, attr] : [type, v];
-    });
-  };
+const parseSymbols = (str, type, attr) => {
+  str.replace(/([a-zA-Z]+)([^a-zA-Z]+)/g, (m, k, v) => {
+    SYM_MAP[k] = attr ? [type, v, attr] : [type, v];
+  });
+};
 
 parseSymbols(
   "alphaαbetaβgammaγthetaθpiπdeltaδepsilonϵzetaζetaηiotaιkappaκlambdaλmuμnuνxiξrhoρsigmaσtauτupsilonυphiϕchiχpsiψomegaωellℓhbarℏneg¬",

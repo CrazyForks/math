@@ -20,12 +20,10 @@ const CHAR_TOK = {
     "(": TOK_LPAREN,
     ")": TOK_RPAREN,
   },
-  isDigit = (c) => c > 47 && c < 58,
   isAlpha = (c) => ((c | 32) - 97) >>> 0 < 26,
-  skip = (str, idx) => {
-    while (str.charCodeAt(idx) <= 32) ++idx;
-    return idx;
-  };
+  skip = (str, idx) => (str.charCodeAt(idx) <= 32 ? skip(str, idx + 1) : idx),
+  NUM_RE = /\d+(?:\.\d+)?|\.\d+/y,
+  CMD_RE = /\\(?:[a-zA-Z]+|.)/y;
 
 export default (str) => {
   const res = [],
@@ -35,26 +33,19 @@ export default (str) => {
     idx = skip(str, idx);
     if (idx >= len) break;
 
-    const code = str.charCodeAt(idx);
-    if (code === 92) {
-      const start = idx++;
-      if (isAlpha(str.charCodeAt(idx))) {
-        while (isAlpha(str.charCodeAt(++idx)));
-      } else if (idx < len) {
-        ++idx;
-      }
-      const cmd = str.slice(start, idx);
+    CMD_RE.lastIndex = idx;
+    let m = CMD_RE.exec(str);
+    if (m) {
+      const cmd = m[0];
+      idx += cmd.length;
       if (cmd === "\\text") {
         const pos = skip(str, idx);
         if (str.charCodeAt(pos) === 123) {
           let braces = 1,
-            t_start = pos + 1,
-            t_idx = t_start;
-          while (t_idx < len) {
-            const cc = str.charCodeAt(t_idx);
-            if (cc === 123) ++braces;
-            else if (cc === 125 && !--braces) break;
-            ++t_idx;
+            t_idx = pos;
+          while (t_idx < len && braces) {
+            const cc = str.charCodeAt(++t_idx);
+            cc === 123 ? ++braces : cc === 125 && --braces;
           }
           if (!braces) {
             res.push(
@@ -63,7 +54,7 @@ export default (str) => {
               TOK_LBRACE,
               "{",
               TOK_IDENT,
-              str.slice(t_start, t_idx),
+              str.slice(pos + 1, t_idx),
               TOK_RBRACE,
               "}",
             );
@@ -75,17 +66,17 @@ export default (str) => {
       res.push(TOK_CMD, cmd);
       continue;
     }
-    if (isDigit(code) || (code === 46 && isDigit(str.charCodeAt(idx + 1)))) {
-      const start = idx;
-      if (code === 46) idx += 2;
-      else {
-        while (isDigit(str.charCodeAt(++idx)));
-        str.charCodeAt(idx) === 46 && isDigit(str.charCodeAt(idx + 1)) && (idx += 2);
-      }
-      while (isDigit(str.charCodeAt(idx))) ++idx;
-      res.push(TOK_NUM, str.slice(start, idx));
+
+    NUM_RE.lastIndex = idx;
+    m = NUM_RE.exec(str);
+    if (m) {
+      const num = m[0];
+      res.push(TOK_NUM, num);
+      idx += num.length;
       continue;
     }
+
+    const code = str.charCodeAt(idx);
     if (isAlpha(code)) {
       res.push(TOK_IDENT, str[idx]);
       ++idx;

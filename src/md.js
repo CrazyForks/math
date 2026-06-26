@@ -7,9 +7,8 @@ export default (md, compile) => {
     const char = md[idx];
 
     if (char === "`") {
-      const block = md[idx + 1] === "`" && md[idx + 2] === "`",
-        delim = block ? "```" : "`",
-        step = block ? 3 : 1,
+      const delim = md.startsWith("```", idx) ? "```" : "`",
+        step = delim.length,
         end = md.indexOf(delim, idx + step);
       if (end === -1) {
         res += md.slice(idx);
@@ -17,10 +16,7 @@ export default (md, compile) => {
       }
       res += md.slice(idx, end + step);
       idx = end + step;
-      continue;
-    }
-
-    if (char === "$") {
+    } else if (char === "$") {
       const block = md[idx + 1] === "$",
         delim = block ? "$$" : "$",
         step = block ? 2 : 1;
@@ -45,17 +41,13 @@ export default (md, compile) => {
         res += delim + content + delim;
       }
       idx = pos + step;
-      continue;
-    }
-
-    if (char === "\\" && md[idx + 1] === "$") {
+    } else if (char === "\\" && md[idx + 1] === "$") {
       res += "$";
       idx += 2;
-      continue;
+    } else {
+      res += char;
+      ++idx;
     }
-
-    res += char;
-    ++idx;
   }
 
   return res;

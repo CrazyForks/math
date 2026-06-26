@@ -20,33 +20,11 @@ import {
   TYPE_MPHANTOM,
 } from "./const/TYPE.js";
 import { STYLE_BOX, STYLE_CANCEL, STYLE_SOUT } from "./const/STYL.js";
-import { NOTATION_BOX, NOTATION_CANCEL, NOTATION_SOUT } from "./const/NOTATION.js";
-import { LIMITS_DISPLAY, LIMITS_INLINE } from "./const/LIMITS.js";
 import lex from "./lex.js";
 import parse from "./parse.js";
 
-const ENV_DELIMS = {
-    __proto__: null,
-    pmatrix: ["(", ")"],
-    bmatrix: ["[", "]"],
-    vmatrix: ["|", "|"],
-    Vmatrix: ["‖", "‖"],
-    cases: ["{", ""],
-  },
-  MROW = "mrow",
-  NOTATION_STYLE_MAP = {
-    [NOTATION_BOX]: STYLE_BOX,
-    [NOTATION_CANCEL]: STYLE_CANCEL,
-    [NOTATION_SOUT]: STYLE_SOUT,
-  },
-  LIMITS_FUNCS = {
-    __proto__: null,
-    lim: 1,
-    max: 1,
-    min: 1,
-    sup: 1,
-    inf: 1,
-  },
+const MROW = "mrow",
+  STYLES = [null, STYLE_BOX, STYLE_CANCEL, STYLE_SOUT],
   ESC_MAP = {
     "&": "&amp;",
     "<": "&lt;",
@@ -57,7 +35,7 @@ const ENV_DELIMS = {
   wrap = (tag_name, inner, attr) =>
     "<" + tag_name + (attr || "") + ">" + inner + "</" + tag_name + ">",
   tag = (name, val, attr) => wrap(name, esc(val), attr),
-  nest = (name, n1, n2, n3) => wrap(name, row(n1) + row(n2) + (n3 ? row(n3) : "")),
+  nest = (name, ...ns) => wrap(name, ns.map(row).join("")),
   row = (n) => {
     if (!n) return wrap(MROW, "");
     const [type, val] = n;
@@ -68,8 +46,8 @@ const ENV_DELIMS = {
         : show(n);
   },
   script = (n1, limits, display, inline) =>
-    limits === LIMITS_DISPLAY ||
-    (!limits && (n1[1] === "∑" || (n1[0] === TYPE_FUNC && LIMITS_FUNCS[n1[1]])))
+    limits === 1 ||
+    (!limits && (n1[1] === "∑" || (n1[0] === TYPE_FUNC && /^(lim|max|min|sup|inf)$/.test(n1[1]))))
       ? display
       : inline,
   SHOW_MAP = {
@@ -89,7 +67,7 @@ const ENV_DELIMS = {
     [TYPE_LEFT_RIGHT]: (n) => wrap(MROW, n[1].map(show).join("")),
     [TYPE_OVERLINE]: (n) => nest("mover", n[1], [TYPE_OP, "¯"]),
     [TYPE_MENCLOSE]: (n) => {
-      const style = NOTATION_STYLE_MAP[n[1]];
+      const style = STYLES[n[1]];
       return style ? "<mrow" + style + ">" + row(n[2]) + "</mrow>" : row(n[2]);
     },
     [TYPE_MPHANTOM]: (n) => wrap("mphantom", row(n[1])),
@@ -131,9 +109,10 @@ const ENV_DELIMS = {
                 '"'
             : "",
         ),
-        del = ENV_DELIMS[n[1]];
-      if (del) {
-        const [d0, d1] = del;
+        idx = "pbvVc".indexOf(n[1][0]);
+      if (idx >= 0) {
+        const d0 = "([|‖{"[idx],
+          d1 = ")]‖‖"[idx] || "";
         return wrap(MROW, (d0 ? tag("mo", d0) : "") + tbl + (d1 ? tag("mo", d1) : ""));
       }
       return tbl;

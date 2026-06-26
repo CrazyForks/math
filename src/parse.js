@@ -18,14 +18,8 @@ import {
   TYPE_MENCLOSE,
   TYPE_MPHANTOM,
 } from "./const/TYPE.js";
-import {
-  ERR_EXTRA_END,
-  ERR_MISSING_RIGHT,
-  ERR_EXTRA_RIGHT,
-  ERR_MISSING_BRACE,
-} from "./const/ERR.js";
+
 import { ATTR_NORMAL, ATTR_STRETCHY_FALSE, ATTR_BAR } from "./const/ATTR.js";
-import { ENV_NAMES } from "./const/ENV.js";
 import { SYM_MAP } from "./const/SYM.js";
 import {
   TOK_EOF,
@@ -40,18 +34,15 @@ import {
   TOK_LPAREN,
   TOK_RPAREN,
 } from "./const/TOK.js";
-import { NOTATION_BOX, NOTATION_CANCEL, NOTATION_SOUT } from "./const/NOTATION.js";
-import { LIMITS_DEFAULT, LIMITS_DISPLAY, LIMITS_INLINE } from "./const/LIMITS.js";
-
 const LIMITS_MAP = {
-    "\\limits": LIMITS_DISPLAY,
-    "\\nolimits": LIMITS_INLINE,
+    "\\limits": 1,
+    "\\nolimits": 2,
   },
   MENCLOSE_MAP = {
     __proto__: null,
-    boxed: NOTATION_BOX,
-    cancel: NOTATION_CANCEL,
-    sout: NOTATION_SOUT,
+    boxed: 1,
+    cancel: 2,
+    sout: 3,
   },
   CHAR_MAP = {
     "-": [TYPE_OP, "−"],
@@ -75,15 +66,17 @@ const LIMITS_MAP = {
   },
   opt = (tokens, ref, check_num) => {
     let idx = ref[0];
-    if (tokens[idx] === TOK_OP && tokens[idx + 1] === "[") {
-      if (!check_num || tokens[idx + 2] === TOK_NUM) {
+    if (
+      tokens[idx] === TOK_OP &&
+      tokens[idx + 1] === "[" &&
+      (!check_num || tokens[idx + 2] === TOK_NUM)
+    ) {
+      idx += 2;
+      while (tokens[idx] > 0 && (tokens[idx] !== TOK_OP || tokens[idx + 1] !== "]")) {
         idx += 2;
-        while (tokens[idx] > 0 && (tokens[idx] !== TOK_OP || tokens[idx + 1] !== "]")) {
-          idx += 2;
-        }
-        tokens[idx] === TOK_OP && (idx += 2);
-        ref[0] = idx;
       }
+      tokens[idx] === TOK_OP && (idx += 2);
+      ref[0] = idx;
     }
   },
   brace = (tokens, ref) => {
@@ -120,11 +113,10 @@ const LIMITS_MAP = {
       }
       if ((type === TOK_OP && val === "&") || (type === TOK_CMD && val === "\\\\")) {
         ref[0] += 2;
-        const is_row = val === "\\\\";
-        is_row && opt(tokens, ref, 1);
         row.push(cell);
         cell = [];
-        if (is_row) {
+        if (val === "\\\\") {
+          opt(tokens, ref, 1);
           rows.push(row);
           row = [];
         }
@@ -155,11 +147,13 @@ const LIMITS_MAP = {
       if (val === "") return [TYPE_GROUP, []];
       const parts = val.split("\\\\");
       if (parts.length > 1) {
-        const nodes = [];
-        parts.forEach(
-          (p, i) => (i && nodes.push([TYPE_LINEBREAK]), p && nodes.push([TYPE_TEXT, p])),
-        );
-        return [TYPE_GROUP, nodes];
+        return [
+          TYPE_GROUP,
+          parts.flatMap((p, i) => [
+            ...(i ? [[TYPE_LINEBREAK]] : []),
+            ...(p ? [[TYPE_TEXT, p]] : []),
+          ]),
+        ];
       }
       return [TYPE_TEXT, val];
     }
@@ -167,16 +161,14 @@ const LIMITS_MAP = {
     if (node) {
       return [TYPE_TEXT, node[1]];
     }
-    throw [ERR_MISSING_BRACE, "text"];
+    throw [3, "text"];
   },
   begin = (tokens, ref, val) => {
     if (tokens[ref[0]] === TOK_LBRACE) {
       const env = brace(tokens, ref);
       if (env === "array") {
         opt(tokens, ref);
-        tokens[ref[0]] === TOK_LBRACE
-          ? brace(tokens, ref)
-          : tokens[ref[0]] !== TOK_EOF && (ref[0] += 2);
+        tokens[ref[0]] === TOK_LBRACE ? brace(tokens, ref) : tokens[ref[0]] > 0 && (ref[0] += 2);
       }
       const res = rows(tokens, ref, 1, env);
       return [TYPE_MATRIX, env, res];
@@ -203,7 +195,7 @@ const LIMITS_MAP = {
       ref[0] += 2;
       return [TYPE_LEFT_RIGHT, [left, ...body, delim(tokens, ref)].filter(Boolean)];
     }
-    throw [ERR_MISSING_RIGHT, left];
+    throw [1, left];
   },
   over = (tokens, ref) => [TYPE_OVERLINE, read(tokens, ref, 1)],
   frac = (tokens, ref) => [TYPE_FRAC, read(tokens, ref, 1), read(tokens, ref, 1)],
@@ -212,11 +204,11 @@ const LIMITS_MAP = {
     TYPE_GROUP,
     [
       [TYPE_SPACE, "8px"],
-      [TYPE_OP, "(", ATTR_STRETCHY_FALSE],
+      CHAR_MAP["("],
       [TYPE_TEXT, "mod"],
       [TYPE_SPACE, "4px"],
       read(tokens, ref, 1),
-      [TYPE_OP, ")", ATTR_STRETCHY_FALSE],
+      CHAR_MAP[")"],
     ],
   ],
   CMD_MAP = {
@@ -236,10 +228,10 @@ const LIMITS_MAP = {
     pmod,
     begin,
     end: (tokens, ref, val, name) => {
-      throw [ERR_EXTRA_END, name];
+      throw [0, name];
     },
     right: (tokens, ref, val, name) => {
-      throw [ERR_EXTRA_RIGHT, name];
+      throw [2, name];
     },
   },
   TOK_MAP = {
@@ -258,7 +250,7 @@ const LIMITS_MAP = {
         handler = CMD_MAP[name];
       return handler
         ? handler(tokens, ref, val, name)
-        : ENV_NAMES[name]
+        : /^(?:[pbvV]?matrix|cases|array)$/.test(name)
           ? (matrix(tokens, ref, name) ?? [TYPE_IDENT, val])
           : MENCLOSE_MAP[name]
             ? [TYPE_MENCLOSE, MENCLOSE_MAP[name], read(tokens, ref, 1)]
@@ -284,7 +276,7 @@ const LIMITS_MAP = {
   grab = (tokens, ref) => {
     const base = read(tokens, ref);
     if (!base) return null;
-    let limits = LIMITS_DEFAULT;
+    let limits = 0;
     const idx = ref[0];
     if (tokens[idx] === TOK_CMD) {
       const lim = LIMITS_MAP[tokens[idx + 1]];
