@@ -115,7 +115,7 @@ const LIMITS_MAP = {
         }
         ref[0] = pos;
       }
-      if ((type === TOK_OP && val === "&") || (type === TOK_CMD && val === "\\\\")) {
+      if (val === "&" || val === "\\\\") {
         ref[0] += 2;
         row.push(cell);
         cell = [];
