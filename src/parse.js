@@ -278,8 +278,8 @@ const LIMITS_MAP = {
       idx = ref[0];
     if (!base) return null;
     let limits = LIMITS_MAP[tokens[idx + 1]] || 0,
-      sub = null,
-      sup = null,
+      sub,
+      sup,
       type;
     limits && (ref[0] += 2);
     while ((type = tokens[ref[0]]) > 0) {
