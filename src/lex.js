@@ -55,15 +55,12 @@ export default (str) => {
       continue;
     }
 
-    const code = str.charCodeAt(idx);
-    if (((code | 32) - 97) >>> 0 < 26) {
-      res.push(TOK_IDENT, str[idx]);
-      ++idx;
-      continue;
-    }
     const char = str[idx],
       pos = "_^{}".indexOf(char);
-    res.push(pos >= 0 ? pos + TOK_SUB : TOK_OP, char);
+    res.push(
+      ((char.charCodeAt(0) | 32) - 97) >>> 0 < 26 ? TOK_IDENT : pos >= 0 ? pos + TOK_SUB : TOK_OP,
+      char,
+    );
     ++idx;
   }
   res.push(TOK_EOF, "");
