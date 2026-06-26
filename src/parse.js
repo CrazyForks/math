@@ -72,36 +72,28 @@ const LIMITS_MAP = {
     ".": [TYPE_OP, ".", ATTR_NORMAL],
     "'": [TYPE_OP, "′"],
   },
-  DELIM_MAP = {
-    __proto__: null,
-    "\\{": "{",
-    "\\}": "}",
-    "<": "⟨",
-    ">": "⟩",
-  },
   ident = (val) => [TYPE_IDENT, val],
   num = (val) => [TYPE_NUM, val],
   op = (val) => CHAR_MAP[val] ?? [TYPE_OP, val],
   lparen = () => CHAR_MAP["("],
   rparen = () => CHAR_MAP[")"],
   delim = (tokens, ref) => {
-    const idx = ref[0],
-      type = tokens[idx];
-    if (type == null) return null;
+    const idx = ref[0];
+    if (tokens[idx] == null) return null;
     ref[0] += 2;
     const val = tokens[idx + 1];
     if (val === ".") return [TYPE_OP, "", ' fence="true" stretchy="true" symmetric="true"'];
-    return [TYPE_OP, DELIM_MAP[val] ?? (val[0] === "\\" ? val.slice(1) : val)];
+    return [TYPE_OP, val === "<" ? "⟨" : val === ">" ? "⟩" : val[0] === "\\" ? val.slice(1) : val];
   },
   opt = (tokens, ref, check_num) => {
     let idx = ref[0];
     if (tokens[idx] === TOK_OP && tokens[idx + 1] === "[") {
       if (!check_num || tokens[idx + 2] === TOK_NUM) {
         idx += 2;
-        while (tokens[idx] !== TOK_EOF && (tokens[idx] !== TOK_OP || tokens[idx + 1] !== "]")) {
+        while (tokens[idx] > 0 && (tokens[idx] !== TOK_OP || tokens[idx + 1] !== "]")) {
           idx += 2;
         }
-        if (tokens[idx] === TOK_OP) idx += 2;
+        tokens[idx] === TOK_OP && (idx += 2);
         ref[0] = idx;
       }
     }
@@ -111,11 +103,11 @@ const LIMITS_MAP = {
     if (tokens[idx] === TOK_LBRACE) {
       idx += 2;
       let str = "";
-      while (tokens[idx] !== TOK_EOF && tokens[idx] !== TOK_RBRACE) {
+      while (tokens[idx] > 0 && tokens[idx] !== TOK_RBRACE) {
         str += tokens[idx + 1];
         idx += 2;
       }
-      if (tokens[idx] === TOK_RBRACE) idx += 2;
+      tokens[idx] === TOK_RBRACE && (idx += 2);
       ref[0] = idx;
       return str;
     }
@@ -125,10 +117,9 @@ const LIMITS_MAP = {
     const rows = [];
     let row = [],
       cell = [];
-    while (ref[0] < tokens.length) {
+    while (tokens[ref[0]] > 0) {
       const type = tokens[ref[0]],
         val = tokens[ref[0] + 1];
-      if (type === TOK_EOF) break;
       if (!end_check && type === TOK_RBRACE) break;
       if (end_check && type === TOK_CMD && val === "\\end") {
         const pos = ref[0];
@@ -157,15 +148,9 @@ const LIMITS_MAP = {
       const node = grab(tokens, ref);
       if (node) cell.push(node);
     }
-    if (cell.length || row.length) {
-      row.push(cell);
-      rows.push(row);
-    }
-    if (rows.length) {
-      const last = rows[rows.length - 1];
-      if (!last[1] && !last[0][0]) {
-        rows.pop();
-      }
+    (cell.length || row.length) && (row.push(cell), rows.push(row));
+    if (rows.length && !rows[rows.length - 1][1] && !rows[rows.length - 1][0][0]) {
+      rows.pop();
     }
     return rows;
   },
@@ -186,10 +171,9 @@ const LIMITS_MAP = {
       const parts = val.split("\\\\");
       if (parts.length > 1) {
         const nodes = [];
-        parts.forEach((p, i) => {
-          if (i > 0) nodes.push([TYPE_LINEBREAK]);
-          if (p) nodes.push([TYPE_TEXT, p]);
-        });
+        parts.forEach(
+          (p, i) => (i && nodes.push([TYPE_LINEBREAK]), p && nodes.push([TYPE_TEXT, p])),
+        );
         return [TYPE_GROUP, nodes];
       }
       return [TYPE_TEXT, val];
@@ -205,11 +189,9 @@ const LIMITS_MAP = {
       const env = brace(tokens, ref);
       if (env === "array") {
         opt(tokens, ref);
-        if (tokens[ref[0]] === TOK_LBRACE) {
-          brace(tokens, ref);
-        } else if (tokens[ref[0]] !== TOK_EOF) {
-          ref[0] += 2;
-        }
+        tokens[ref[0]] === TOK_LBRACE
+          ? brace(tokens, ref)
+          : tokens[ref[0]] !== TOK_EOF && (ref[0] += 2);
       }
       const res = rows(tokens, ref, 1, env);
       return [TYPE_MATRIX, env, res];
@@ -220,10 +202,7 @@ const LIMITS_MAP = {
     if (tokens[ref[0]] === TOK_OP && tokens[ref[0] + 1] === "[") {
       ref[0] += 2;
       const nodes = [];
-      while (
-        tokens[ref[0]] !== TOK_EOF &&
-        (tokens[ref[0]] !== TOK_OP || tokens[ref[0] + 1] !== "]")
-      ) {
+      while (tokens[ref[0]] > 0 && (tokens[ref[0]] !== TOK_OP || tokens[ref[0] + 1] !== "]")) {
         const node = grab(tokens, ref);
         if (node) nodes.push(node);
       }
@@ -258,9 +237,7 @@ const LIMITS_MAP = {
   CMD_MAP = {
     __proto__: null,
     "\\": (tokens, ref) => {
-      if (tokens[ref[0]] === TOK_OP && tokens[ref[0] + 1] === "*") {
-        ref[0] += 2;
-      }
+      tokens[ref[0]] === TOK_OP && tokens[ref[0] + 1] === "*" && (ref[0] += 2);
       opt(tokens, ref, 1);
       return [TYPE_LINEBREAK];
     },
@@ -288,28 +265,29 @@ const LIMITS_MAP = {
     [TOK_NUM]: num,
     [TOK_LBRACE]: (val, tokens, ref) => {
       const res = [TYPE_GROUP, parse(tokens, ref)];
-      if (tokens[ref[0]] === TOK_RBRACE) ref[0] += 2;
+      tokens[ref[0]] === TOK_RBRACE && (ref[0] += 2);
       return res;
     },
     [TOK_CMD]: (val, tokens, ref) => {
       const name = val.slice(1),
         handler = CMD_MAP[name];
-      if (handler) return handler(tokens, ref, val, name);
-      if (ENV_NAMES[name]) return matrix(tokens, ref, name) ?? ident(val);
-      const space = SPACE_MAP[name];
-      if (space) return [TYPE_SPACE, space];
-      const notation = MENCLOSE_MAP[name];
-      return notation
-        ? [TYPE_MENCLOSE, notation, read(tokens, ref, 1)]
-        : FUNC_NAMES[name]
-          ? [TYPE_FUNC, name]
-          : (SYM_MAP[name] ?? ident(val));
+      return handler
+        ? handler(tokens, ref, val, name)
+        : ENV_NAMES[name]
+          ? (matrix(tokens, ref, name) ?? ident(val))
+          : SPACE_MAP[name]
+            ? [TYPE_SPACE, SPACE_MAP[name]]
+            : MENCLOSE_MAP[name]
+              ? [TYPE_MENCLOSE, MENCLOSE_MAP[name], read(tokens, ref, 1)]
+              : FUNC_NAMES[name]
+                ? [TYPE_FUNC, name]
+                : (SYM_MAP[name] ?? ident(val));
     },
   },
   read = (tokens, ref, split_num) => {
     const idx = ref[0],
       type = tokens[idx];
-    if (type == null) return null;
+    if (!type) return null;
     let val = tokens[idx + 1];
     const offset = ref[1] || 0;
     if (offset > 0) {
@@ -339,7 +317,7 @@ const LIMITS_MAP = {
     let sub = null,
       sup = null,
       type;
-    while ((type = tokens[ref[0]]) != null) {
+    while ((type = tokens[ref[0]]) > 0) {
       if (type === TOK_OP && tokens[ref[0] + 1] === "'") {
         let count = 0;
         while (tokens[ref[0]] === TOK_OP && tokens[ref[0] + 1] === "'") {
@@ -365,8 +343,8 @@ const LIMITS_MAP = {
   parse = (tokens, ref) => {
     const nodes = [];
     let type;
-    while ((type = tokens[ref[0]]) != null) {
-      if (type === TOK_EOF || type === TOK_RBRACE) break;
+    while ((type = tokens[ref[0]]) > 0) {
+      if (type === TOK_RBRACE) break;
       if (type === TOK_CMD && tokens[ref[0] + 1] === "\\right") break;
       const node = grab(tokens, ref);
       if (node) nodes.push(node);

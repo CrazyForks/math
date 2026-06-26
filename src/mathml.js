@@ -103,18 +103,7 @@ const ENV_DELIMS = {
             const c2 = r[1];
             if (!c2 || !c2[0]) return true;
             const [type, val] = c2[0];
-            return (
-              type === TYPE_OP &&
-              (val === "=" ||
-                val === "<" ||
-                val === ">" ||
-                val === "≤" ||
-                val === "≥" ||
-                val === "≠" ||
-                val === "≈" ||
-                val === "≡" ||
-                val === "∝")
-            );
+            return type === TYPE_OP && "=<≤≥≠≈≡∝>".includes(val);
           }),
         inner = n[2]
           .map((r) =>

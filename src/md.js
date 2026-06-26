@@ -1,7 +1,3 @@
-const DOLLAR = "$",
-  BACKTICK = "`",
-  BACKSLASH = "\\";
-
 export default (md, compile) => {
   const len = md.length;
   let res = "",
@@ -10,8 +6,8 @@ export default (md, compile) => {
   while (idx < len) {
     const char = md[idx];
 
-    if (char === BACKTICK) {
-      const is_block = md[idx + 1] === BACKTICK && md[idx + 2] === BACKTICK,
+    if (char === "`") {
+      const is_block = md[idx + 1] === "`" && md[idx + 2] === "`",
         delim = is_block ? "```" : "`",
         step = is_block ? 3 : 1,
         end_pos = md.indexOf(delim, idx + step);
@@ -24,15 +20,15 @@ export default (md, compile) => {
       continue;
     }
 
-    if (char === DOLLAR) {
-      const is_block = md[idx + 1] === DOLLAR,
+    if (char === "$") {
+      const is_block = md[idx + 1] === "$",
         delim = is_block ? "$$" : "$",
         step = is_block ? 2 : 1;
       let pos = idx + step;
 
       while (pos < len) {
         const cc = md[pos];
-        if (cc === BACKSLASH) {
+        if (cc === "\\") {
           pos += 2;
         } else if (md.startsWith(delim, pos)) {
           break;
@@ -56,8 +52,8 @@ export default (md, compile) => {
       continue;
     }
 
-    if (char === BACKSLASH && md[idx + 1] === DOLLAR) {
-      res += DOLLAR;
+    if (char === "\\" && md[idx + 1] === "$") {
+      res += "$";
       idx += 2;
       continue;
     }

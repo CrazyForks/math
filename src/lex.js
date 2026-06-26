@@ -12,8 +12,7 @@ import {
   TOK_RPAREN,
 } from "./const/TOK.js";
 
-const CHAR_DOT = 46,
-  CHAR_TOK = {
+const CHAR_TOK = {
     _: TOK_SUB,
     "^": TOK_SUP,
     "{": TOK_LBRACE,
@@ -78,13 +77,13 @@ export default (str) => {
       res.push(TOK_CMD, cmd);
       continue;
     }
-    if (isDigit(code) || (code === CHAR_DOT && isDigit(str.charCodeAt(idx + 1)))) {
+    if (isDigit(code) || (code === 46 && isDigit(str.charCodeAt(idx + 1)))) {
       const start = idx;
-      if (code === CHAR_DOT) {
+      if (code === 46) {
         idx += 2;
       } else {
         while (isDigit(str.charCodeAt(++idx)));
-        if (str.charCodeAt(idx) === CHAR_DOT && isDigit(str.charCodeAt(idx + 1))) {
+        if (str.charCodeAt(idx) === 46 && isDigit(str.charCodeAt(idx + 1))) {
           idx += 2;
         }
       }
