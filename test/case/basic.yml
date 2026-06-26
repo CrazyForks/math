@@ -385,6 +385,12 @@
     displaystyle="false"><mi>d</mi></mstyle></mtd></mtr></mtable><annotation
     encoding="application/x-tex">\begin{matrix}a&amp;b\\ c&amp;d \\
     \end{matrix}</annotation></semantics></math>
+- - $$\begin{aligned}a&=b\\c&=d\end{aligned}$$
+  - >-
+    <math xmlns="http://www.w3.org/1998/Math/MathML"
+    display="block"><semantics><mrow><mtable columnalign="right left" rowspacing=".2em"
+    columnspacing="0"><mtr><mtd><mi>a</mi></mtd><mtd><mrow><mo>=</mo><mi>b</mi></mrow></mtd></mtr><mtr><mtd><mi>c</mi></mtd><mtd><mrow><mo>=</mo><mi>d</mi></mrow></mtd></mtr></mtable></mrow><annotation
+    encoding="application/x-tex">\begin{aligned}a&amp;=b\\c&amp;=d\end{aligned}</annotation></semantics></math>
 - - $${2}$$
   - >-
     <math xmlns="http://www.w3.org/1998/Math/MathML"

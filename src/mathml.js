@@ -25,6 +25,10 @@ import parse from "./parse.js";
 
 const MROW = "mrow",
   STYLES = [null, STYLE_BOX, STYLE_CANCEL, STYLE_SOUT],
+  ALIGN_RL = ["right", "left"],
+  PAD_RL = [";padding-right:0", ";padding-left:0"],
+  SPACE_RL = ["0", "2em"],
+  TAGS = [null, "mi", "mn", "mo"],
   ESC_MAP = {
     "&": "&amp;",
     "<": "&lt;",
@@ -35,7 +39,12 @@ const MROW = "mrow",
   wrap = (tag_name, inner, attr) =>
     "<" + tag_name + (attr || "") + ">" + inner + "</" + tag_name + ">",
   tag = (name, val, attr) => wrap(name, esc(val), attr),
+  tblAttr = (align, space) =>
+    ' columnalign="' + align + '" rowspacing=".2em" columnspacing="' + space + '"',
+  cellStyle = (align, pad) => ' style="text-align:' + align + pad + '"',
   nest = (name, ...ns) => wrap(name, ns.map(row).join("")),
+  scr = (n, idx, display, inline) =>
+    nest(script(n[1], n[idx], display, inline), ...n.slice(1, idx)),
   row = (n) => {
     if (!n) return wrap(MROW, "");
     const [type, val] = n;
@@ -45,81 +54,88 @@ const MROW = "mrow",
         ? wrap(MROW, show(n))
         : show(n);
   },
-  script = (n1, limits, display, inline) =>
+  script = ([t, v], limits, display, inline) =>
     limits === 1 ||
-    (!limits && (n1[1] === "∑" || (n1[0] === TYPE_FUNC && /^(lim|max|min|sup|inf)$/.test(n1[1]))))
+    (!limits && (v === "∑" || (t === TYPE_FUNC && /^(lim|max|min|sup|inf)$/.test(v))))
       ? display
       : inline,
   SHOW_MAP = {
-    [TYPE_IDENT]: (n) => tag("mi", n[1], n[2]),
-    [TYPE_NUM]: (n) => tag("mn", n[1]),
-    [TYPE_OP]: (n) => tag("mo", n[1], n[2]),
-    [TYPE_FUNC]: (n) => tag("mi", n[1]) + "<mo>\u2061</mo>",
-    [TYPE_GROUP]: (n) => n[1].map(show).join(""),
-    [TYPE_FRAC]: (n) => nest("mfrac", n[1], n[2]),
-    [TYPE_SUP]: (n) => nest(script(n[1], n[3], "mover", "msup"), n[1], n[2]),
-    [TYPE_SUB]: (n) => nest(script(n[1], n[3], "munder", "msub"), n[1], n[2]),
-    [TYPE_SUPSUB]: (n) => nest(script(n[1], n[4], "munderover", "msubsup"), n[1], n[2], n[3]),
-    [TYPE_TEXT]: (n) => tag("mtext", n[1].replace(/ /g, "\u00A0")),
-    [TYPE_SPACE]: (n) => '<mspace width="' + n[1] + '"></mspace>',
-    [TYPE_MSQRT]: (n) => wrap("msqrt", row(n[1])),
-    [TYPE_MROOT]: (n) => nest("mroot", n[1], n[2]),
-    [TYPE_LEFT_RIGHT]: (n) => wrap(MROW, n[1].map(show).join("")),
-    [TYPE_OVERLINE]: (n) => nest("mover", n[1], [TYPE_OP, "¯"]),
-    [TYPE_MENCLOSE]: (n) => {
-      const style = STYLES[n[1]];
-      return style ? "<mrow" + style + ">" + row(n[2]) + "</mrow>" : row(n[2]);
+    [TYPE_FUNC]: ([, val]) => tag("mi", val) + "<mo>\u2061</mo>",
+    [TYPE_GROUP]: ([, ns]) => ns.map(show).join(""),
+    [TYPE_FRAC]: ([, n_1, n_2]) => nest("mfrac", n_1, n_2),
+    [TYPE_SUP]: (n) => scr(n, 3, "mover", "msup"),
+    [TYPE_SUB]: (n) => scr(n, 3, "munder", "msub"),
+    [TYPE_SUPSUB]: (n) => scr(n, 4, "munderover", "msubsup"),
+    [TYPE_TEXT]: ([, val]) => tag("mtext", val.replace(/ /g, "\u00A0")),
+    [TYPE_SPACE]: ([, val]) => '<mspace width="' + val + '"></mspace>',
+    [TYPE_MSQRT]: ([, n_1]) => wrap("msqrt", row(n_1)),
+    [TYPE_MROOT]: ([, n_1, n_2]) => nest("mroot", n_1, n_2),
+    [TYPE_LEFT_RIGHT]: ([, ns]) => wrap(MROW, ns.map(show).join("")),
+    [TYPE_OVERLINE]: ([, n_1]) => nest("mover", n_1, [TYPE_OP, "¯"]),
+    [TYPE_MENCLOSE]: ([, style_id, node]) => {
+      const style = STYLES[style_id];
+      return style ? "<mrow" + style + ">" + row(node) + "</mrow>" : row(node);
     },
-    [TYPE_MPHANTOM]: (n) => wrap("mphantom", row(n[1])),
+    [TYPE_MPHANTOM]: ([, n_1]) => wrap("mphantom", row(n_1)),
     [TYPE_MATRIX]: (n) => {
-      const is_cases = n[1] === "cases",
+      const [, env, rows] = n,
+        is_cases = env === "cases",
+        is_align = /^align|split/.test(env),
         has_rel =
           is_cases &&
-          n[2].every((r) => {
-            const node = r[1]?.[0];
-            return !node || (node[0] === TYPE_OP && "=<≤≥≠≈≡∝>".includes(node[1]));
+          rows.every((r) => {
+            const [t, v] = r[1]?.[0] || [];
+            return !t || (t === TYPE_OP && "=<≤≥≠≈≡∝>".includes(v));
           }),
-        inner = n[2]
+        row_0 = rows[0] || [],
+        col_styles = row_0.map((_, i) => {
+          if (is_cases) {
+            return cellStyle("left", has_rel ? PAD_RL[i] || "" : "");
+          }
+          if (is_align) {
+            return cellStyle(ALIGN_RL[i % 2], PAD_RL[i % 2] || "");
+          }
+          return "";
+        }),
+        inner = rows
           .map((r) =>
             wrap(
               "mtr",
               r
                 .map((c, i) => {
                   const html = c.map(show).join("");
-                  return wrap(
-                    "mtd",
-                    c[1] ? wrap(MROW, html) : html,
-                    is_cases
-                      ? ' style="text-align:left' +
-                          (has_rel ? (i ? ";padding-left:0" : ";padding-right:0") : "") +
-                          '"'
-                      : "",
-                  );
+                  return wrap("mtd", c[1] ? wrap(MROW, html) : html, col_styles[i] || "");
                 })
                 .join(""),
             ),
           )
-          .join(""),
-        tbl = wrap(
-          "mtable",
-          inner,
-          is_cases
-            ? ' columnalign="left" rowspacing=".2em" columnspacing="' +
-                (has_rel ? "0" : "1em") +
-                '"'
-            : "",
-        ),
-        idx = "pbvVc".indexOf(n[1][0]);
+          .join("");
+
+      let tbl_attr = "";
+      if (is_cases) {
+        tbl_attr = tblAttr("left", has_rel ? "0" : "1em");
+      } else if (is_align) {
+        tbl_attr = tblAttr(
+          row_0.map((_, i) => ALIGN_RL[i % 2]).join(" "),
+          row_0
+            .slice(1)
+            .map((_, i) => SPACE_RL[i % 2])
+            .join(" "),
+        );
+      }
+
+      const tbl = wrap("mtable", inner, tbl_attr),
+        idx = "pbvVc".indexOf(env[0]);
       if (idx >= 0) {
-        const d0 = "([|‖{"[idx],
-          d1 = ")]‖‖"[idx] || "";
-        return wrap(MROW, (d0 ? tag("mo", d0) : "") + tbl + (d1 ? tag("mo", d1) : ""));
+        const d_0 = "([|‖{"[idx],
+          d_1 = ")]‖‖"[idx] || "";
+        return wrap(MROW, tag("mo", d_0) + tbl + (d_1 && tag("mo", d_1)));
       }
       return tbl;
     },
     [TYPE_LINEBREAK]: () => '<mspace linebreak="newline"></mspace>',
   },
-  show = (n) => (n ? SHOW_MAP[n[0]](n) : "");
+  show = (n) => (n ? (n[0] <= 3 ? tag(TAGS[n[0]], n[1], n[2]) : SHOW_MAP[n[0]](n)) : "");
 
 export default (tex, block) => {
   const clean = tex.replace(/[\r\n]+/g, " ");
