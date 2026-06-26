@@ -1,4 +1,4 @@
-import { TYPE_IDENT, TYPE_OP } from "./TYPE.js";
+import { TYPE_IDENT, TYPE_OP, TYPE_SPACE } from "./TYPE.js";
 import { ATTR_NORMAL, ATTR_BIN, ATTR_REL } from "./ATTR.js";
 
 export const SYM_MAP = { __proto__: null };
@@ -27,3 +27,7 @@ parseSymbols(
 parseSymbols("neq≠ne≠", TYPE_OP, ATTR_NORMAL);
 parseSymbols("mp∓lor∨land∧", TYPE_OP, ATTR_BIN);
 parseSymbols("approx≈sim∼cong≅propto∝equiv≡ni∋perp⟂parallel∥", TYPE_OP, ATTR_REL);
+
+// 空格命令直接并入 SYM_MAP，消除 SPACE_MAP
+SYM_MAP.quad = [TYPE_SPACE, "16px"];
+SYM_MAP.qquad = [TYPE_SPACE, "32px"];

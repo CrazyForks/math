@@ -55,11 +55,6 @@ const LIMITS_MAP = {
     cancel: NOTATION_CANCEL,
     sout: NOTATION_SOUT,
   },
-  SPACE_MAP = {
-    __proto__: null,
-    quad: "16px",
-    qquad: "32px",
-  },
   CHAR_MAP = {
     "-": [TYPE_OP, "−"],
     "*": [TYPE_OP, "∗"],
@@ -267,13 +262,11 @@ const LIMITS_MAP = {
         ? handler(tokens, ref, val, name)
         : ENV_NAMES[name]
           ? (matrix(tokens, ref, name) ?? [TYPE_IDENT, val])
-          : SPACE_MAP[name]
-            ? [TYPE_SPACE, SPACE_MAP[name]]
-            : MENCLOSE_MAP[name]
-              ? [TYPE_MENCLOSE, MENCLOSE_MAP[name], read(tokens, ref, 1)]
-              : FUNC_NAMES[name]
-                ? [TYPE_FUNC, name]
-                : (SYM_MAP[name] ?? [TYPE_IDENT, val]);
+          : MENCLOSE_MAP[name]
+            ? [TYPE_MENCLOSE, MENCLOSE_MAP[name], read(tokens, ref, 1)]
+            : FUNC_NAMES[name]
+              ? [TYPE_FUNC, name]
+              : (SYM_MAP[name] ?? [TYPE_IDENT, val]);
     },
   },
   read = (tokens, ref, split_num) => {
