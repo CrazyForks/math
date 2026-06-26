@@ -38,11 +38,7 @@ import {
   TOK_LBRACE,
   TOK_RBRACE,
 } from "./const/TOK.js";
-const LIMITS_MAP = {
-    "\\limits": 1,
-    "\\nolimits": 2,
-  },
-  MENCLOSE_MAP = {
+const MENCLOSE_MAP = {
     __proto__: null,
     boxed: 1,
     cancel: 2,
@@ -277,7 +273,7 @@ const LIMITS_MAP = {
     const base = read(tokens, ref),
       idx = ref[0];
     if (!base) return null;
-    let limits = LIMITS_MAP[tokens[idx + 1]] || 0,
+    let limits = tokens[idx + 1] === "\\limits" ? 1 : tokens[idx + 1] === "\\nolimits" ? 2 : 0,
       sub,
       sup,
       type;
