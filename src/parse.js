@@ -277,12 +277,10 @@ const LIMITS_MAP = {
       idx = ref[0];
     if (!base) return null;
     let limits = 0;
-    if (tokens[idx] === TOK_CMD) {
-      const lim = LIMITS_MAP[tokens[idx + 1]];
-      if (lim) {
-        limits = lim;
-        ref[0] += 2;
-      }
+    const lim = LIMITS_MAP[tokens[idx + 1]];
+    if (lim) {
+      limits = lim;
+      ref[0] += 2;
     }
     let sub = null,
       sup = null,
