@@ -16,7 +16,6 @@ const CHAR_TOK = {
     "{": TOK_LBRACE,
     "}": TOK_RBRACE,
   },
-  isAlpha = (c) => ((c | 32) - 97) >>> 0 < 26,
   skip = (str, idx) => (str.charCodeAt(idx) <= 32 ? skip(str, idx + 1) : idx),
   NUM_RE = /\d+(?:\.\d+)?|\.\d+/y,
   CMD_RE = /\\(?:[a-zA-Z]+|.)/y;
@@ -74,7 +73,7 @@ export default (str) => {
     }
 
     const code = str.charCodeAt(idx);
-    if (isAlpha(code)) {
+    if (((code | 32) - 97) >>> 0 < 26) {
       res.push(TOK_IDENT, str[idx]);
       ++idx;
       continue;
