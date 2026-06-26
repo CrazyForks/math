@@ -72,10 +72,8 @@ const MROW = "mrow",
     [TYPE_MROOT]: ([, n_1, n_2]) => nest("mroot", n_1, n_2),
     [TYPE_LEFT_RIGHT]: ([, ns]) => wrap(MROW, ns.map(show).join("")),
     [TYPE_OVERLINE]: ([, n_1]) => nest("mover", n_1, [TYPE_OP, "¯"]),
-    [TYPE_MENCLOSE]: ([, style_id, node]) => {
-      const style = STYLES[style_id];
-      return style ? "<mrow" + style + ">" + row(node) + "</mrow>" : row(node);
-    },
+    [TYPE_MENCLOSE]: ([, style_id, node], style = STYLES[style_id]) =>
+      style ? "<mrow" + style + ">" + row(node) + "</mrow>" : row(node),
     [TYPE_MPHANTOM]: ([, n_1]) => wrap("mphantom", row(n_1)),
     [TYPE_MATRIX]: (n) => {
       const [, env, rows] = n,
