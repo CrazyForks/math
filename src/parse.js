@@ -279,9 +279,9 @@ const MENCLOSE_MAP = {
       type;
     limits && (ref[0] += 2);
     while ((type = tokens[ref[0]]) > 0) {
-      if (tokens[ref[0] + 1] === "'") {
-        let count = 0;
-        while (tokens[ref[0] + 1] === "'") (++count, (ref[0] += 2));
+      let count = 0;
+      for (; tokens[ref[0] + 1] === "'"; ref[0] += 2) ++count;
+      if (count) {
         sup = [TYPE_OP, "′".repeat(count)];
         continue;
       }
