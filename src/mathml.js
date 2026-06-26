@@ -89,9 +89,9 @@ const MROW = "mrow",
         row_0 = rows[0] || [],
         col_styles = row_0.map((_, i) =>
           is_cases
-            ? cellStyle(LEFT, has_rel ? PAD_RL[i] || "" : "")
+            ? cellStyle(LEFT, has_rel ? PAD_RL[i % 2] : "")
             : is_align
-              ? cellStyle(ALIGN_RL[i % 2], PAD_RL[i % 2] || "")
+              ? cellStyle(ALIGN_RL[i % 2], PAD_RL[i % 2])
               : "",
         ),
         inner = rows
